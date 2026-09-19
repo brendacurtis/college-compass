@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reach, Match &amp; Safety Schools — College Compass</title>
+<meta name="description" content="Enter your child's SAT or ACT score and see which colleges are likely reach, match, or safety schools based on real admissions data.">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a href="index.html" class="brand"><span class="mark">CC</span> College Compass</a>
+    <nav class="main-nav">
+      <a href="index.html">Search Schools</a>
+      <a href="chances.html" class="active">Find My Schools</a>
+      <a href="tracker.html">My Tracker</a>
+      <a href="about.html">About This Data</a>
+    </nav>
+    <button class="nav-toggle" aria-label="Toggle menu">&#9776;</button>
+  </div>
+</header>
+
+<div class="wrap page-title-bar">
+  <h1>Find Reach, Match &amp; Safety Schools</h1>
+  <p>Enter your child's test score to sort schools into three groups based on how their score compares to each school's recent admitted class — plus a built-in rule that any school admitting under 15% of applicants counts as a reach for everyone, regardless of scores.</p>
+</div>
+
+<div class="wrap">
+  <form class="chances-form" id="chances-form">
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Test Type</label>
+        <div class="test-toggle">
+          <button type="button" id="toggle-sat" class="active">SAT</button>
+          <button type="button" id="toggle-act">ACT</button>
+        </div>
+      </div>
+      <div class="form-field">
+        <label id="score-label">SAT Score (400–1600)</label>
+        <input type="number" id="score-input" min="400" max="1600" step="10" placeholder="e.g. 1350" required>
+      </div>
+      <div class="form-field">
+        <label>Unweighted GPA (optional)</label>
+        <input type="number" id="gpa-input" min="0" max="5" step="0.01" placeholder="e.g. 3.7">
+      </div>
+      <div class="form-field">
+        <label>State (optional)</label>
+        <select id="state-input"><option value="">Any state</option></select>
+      </div>
+      <div class="form-field">
+        <label>Max Net Price (optional)</label>
+        <input type="number" id="price-input" min="0" step="1000" placeholder="e.g. 35000">
+      </div>
+    </div>
+    <div class="chances-note">
+      <strong>A note on GPA:</strong> the federal College Scorecard dataset this site runs on doesn't publish admitted students' GPA, class rank, or course rigor — only standardized test scores and acceptance rates. So the classification below is based on test scores and acceptance rate only. Your GPA is shown for your own reference; weigh it (and course rigor) as important context the algorithm can't see.
+    </div>
+    <button type="submit" id="find-schools-btn">Find My Schools</button>
+  </form>
+
+  <div id="results-area" hidden>
+    <div class="chances-board">
+      <div class="chance-column reach-col">
+        <div class="chance-header reach">
+          <span class="count" id="reach-count">0</span>
+          <span>Reach Schools</span>
+          <span class="desc">Score below this school's 25th percentile, or acceptance rate under 15%</span>
+        </div>
+        <div id="reach-list"></div>
+      </div>
+      <div class="chance-column match-col">
+        <div class="chance-header match">
+          <span class="count" id="match-count">0</span>
+          <span>Match Schools</span>
+          <span class="desc">Score falls within the middle 50% of admitted students</span>
+        </div>
+        <div id="match-list"></div>
+      </div>
+      <div class="chance-column safety-col">
+        <div class="chance-header safety">
+          <span class="count" id="safety-count">0</span>
+          <span>Safety Schools</span>
+          <span class="desc">Score at or above this school's 75th percentile</span>
+        </div>
+        <div id="safety-list"></div>
+      </div>
+    </div>
+    <p class="unclassified-note" id="unclassified-note"></p>
+  </div>
+
+  <div id="no-results" class="empty-state">Enter a test score above and click "Find My Schools" to get started.</div>
+</div>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div>College Compass — part of the Family Educational-Planning resources.</div>
+    <div>Data: U.S. Dept. of Education College Scorecard. Not affiliated with or endorsed by any institution.</div>
+  </div>
+</footer>
+
+<script src="js/app.js"></script>
+<script src="js/chances.js"></script>
+</body>
+</html>

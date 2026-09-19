@@ -539,6 +539,122 @@ table.tracker-table textarea { min-height: 36px; resize: vertical; }
 .site-footer a { color: rgba(255,255,255,0.9); }
 .site-footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
 
+/* Chances (Reach/Match/Safety) tool */
+.chances-form {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+  margin: 22px 0;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.form-field label {
+  display: block;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+.form-field input, .form-field select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+.test-toggle { display: flex; gap: 0; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+.test-toggle button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.test-toggle button.active { background: var(--navy); color: #fff; }
+.chances-note {
+  background: var(--navy-pale);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 0.85rem;
+  color: var(--navy-light);
+  margin-bottom: 16px;
+}
+#find-schools-btn {
+  background: var(--gold);
+  color: var(--navy);
+  border: none;
+  padding: 12px 28px;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+#find-schools-btn:hover { background: var(--gold-light); }
+
+.chances-board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin: 24px 0;
+}
+@media (max-width: 900px) { .chances-board { grid-template-columns: 1fr; } }
+.chance-column { display: flex; flex-direction: column; gap: 10px; }
+.chance-header {
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  color: #fff;
+  font-weight: 700;
+}
+.chance-header.reach { background: var(--red); }
+.chance-header.match { background: var(--navy); }
+.chance-header.safety { background: var(--green); }
+.chance-header .count { font-size: 1.6rem; display: block; }
+.chance-header .desc { font-size: 0.76rem; font-weight: 400; opacity: 0.9; display: block; margin-top: 2px; }
+.chance-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.chance-column.reach-col .chance-card { border-left-color: var(--red); }
+.chance-column.match-col .chance-card { border-left-color: var(--navy); }
+.chance-column.safety-col .chance-card { border-left-color: var(--green); }
+.chance-card .name { font-weight: 700; color: var(--navy); font-size: 0.94rem; }
+.chance-card .name a { color: inherit; text-decoration: none; }
+.chance-card .name a:hover { color: var(--gold); }
+.chance-card .loc { color: var(--muted); font-size: 0.8rem; margin-bottom: 6px; }
+.chance-card .reason { font-size: 0.8rem; color: var(--text); margin-bottom: 8px; }
+.chance-card .row-actions { display: flex; gap: 8px; align-items: center; }
+.chance-card .add-mini {
+  font-size: 0.74rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: #fff;
+  cursor: pointer;
+  color: var(--navy);
+  font-weight: 600;
+}
+.chance-card .add-mini.added { background: var(--gold); border-color: var(--gold); }
+.chance-column-empty { color: var(--muted); font-size: 0.85rem; padding: 10px; }
+.unclassified-note {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-top: 6px;
+}
+
 @media print {
   .site-header, .site-footer, .hero-actions, .filters, #load-more, .tracker-toolbar .actions, .remove-btn { display: none !important; }
   body { background: #fff; }

@@ -9,12 +9,14 @@ This is a **static site**: plain HTML/CSS/JavaScript with pre-built data files. 
 ```
 site/
   index.html        Search & filter homepage
+  chances.html        Reach/Match/Safety school finder (SAT or ACT score input)
   school.html        Individual school profile page (reads ?id=<UNITID>)
   tracker.html        Family's application tracker (localStorage only)
   about.html          Data source & methodology
   css/style.css        All styling
   js/app.js         Shared helpers + tracker storage logic
   js/search.js        Homepage search/filter logic
+  js/chances.js        Reach/Match/Safety classifier logic (incl. ACT/SAT concordance table)
   js/school.js        School detail page logic
   js/tracker.js        Tracker page logic
   data/schools.json      Compact list of all 2,207 schools (search/filter)

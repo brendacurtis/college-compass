@@ -77,6 +77,7 @@
   const act = d.act || {};
   document.getElementById("admissions-body").innerHTML = kv([
     ["Selectivity", d.selectivity],
+    ["Test score policy", d.test_policy || "Not reported"],
     ["SAT EBRW (25th–75th pctile)", sat.ebrw_25 ? `${sat.ebrw_25}–${sat.ebrw_75}` : "Not reported"],
     ["SAT Math (25th–75th pctile)", sat.math_25 ? `${sat.math_25}–${sat.math_75}` : "Not reported"],
     ["SAT Average", sat.avg ? sat.avg : "Not reported"],
@@ -90,6 +91,7 @@
     ["Total cost of attendance", fmtMoney(d.cost_of_attendance)],
     ["Average net price (after aid)", fmtMoney(d.net_price)],
     ["Students receiving Pell Grants", fmtPct(d.pell_pct)],
+    ["First-generation college students", fmtPct(d.first_gen_pct)],
     ["Students taking federal loans", fmtPct(d.loan_pct)],
     ["Median federal debt at graduation", fmtMoney(d.debt_median)],
   ]);
