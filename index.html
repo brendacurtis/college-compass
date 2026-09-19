@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>College Compass — Search Schools for Your Family</title>
+<meta name="description" content="Search 2,200+ four-year colleges with real admissions, cost, diversity, and outcomes data. Download a PDF profile for any school and track your family's applications.">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a href="index.html" class="brand"><span class="mark">CC</span> College Compass</a>
+    <nav class="main-nav">
+      <a href="index.html" class="active">Search Schools</a>
+      <a href="tracker.html">My Tracker</a>
+      <a href="about.html">About This Data</a>
+    </nav>
+    <button class="nav-toggle" aria-label="Toggle menu">&#9776;</button>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <h1>Find the right college fit for your family.</h1>
+    <p>Search real admissions, cost, diversity, and outcomes data for over 2,200 four-year colleges — sourced from the U.S. Department of Education's College Scorecard. Download a printable profile for any school, or add it to your family's application tracker.</p>
+    <form class="search-box" id="search-form" role="search">
+      <input type="text" id="search-input" placeholder="Search by college name, city, or state..." autocomplete="off">
+      <button type="submit">Search</button>
+    </form>
+    <div class="stat-strip" id="stat-strip">
+      <div><strong id="stat-total">—</strong>Four-year colleges</div>
+      <div><strong id="stat-states">—</strong>States &amp; territories</div>
+      <div><strong>100%</strong>Free, no account needed</div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <div class="browse">
+    <aside class="filters" id="filters">
+      <h3>State</h3>
+      <select id="f-state">
+        <option value="">All states</option>
+      </select>
+
+      <h3>Type of School</h3>
+      <label class="check-row"><input type="checkbox" class="f-control" value="Public"> Public</label>
+      <label class="check-row"><input type="checkbox" class="f-control" value="Private nonprofit"> Private nonprofit</label>
+      <label class="check-row"><input type="checkbox" class="f-control" value="Private for-profit"> Private for-profit</label>
+
+      <h3>Undergraduate Size</h3>
+      <select id="f-size">
+        <option value="">Any size</option>
+        <option value="Small (under 2,000)">Small (under 2,000)</option>
+        <option value="Medium (2,000-10,000)">Medium (2,000-10,000)</option>
+        <option value="Large (10,000-20,000)">Large (10,000-20,000)</option>
+        <option value="Very large (20,000+)">Very large (20,000+)</option>
+      </select>
+
+      <h3>Selectivity</h3>
+      <select id="f-selectivity">
+        <option value="">Any selectivity</option>
+        <option value="Most selective (<10%)">Most selective (&lt;10%)</option>
+        <option value="Highly selective (10-25%)">Highly selective (10-25%)</option>
+        <option value="Selective (25-50%)">Selective (25-50%)</option>
+        <option value="Less selective (50-75%)">Less selective (50-75%)</option>
+        <option value="Open / minimally selective (75%+)">Open / minimally selective (75%+)</option>
+      </select>
+
+      <h3>Max Average Net Price</h3>
+      <input type="number" id="f-price" placeholder="e.g. 30000" min="0" step="1000">
+
+      <h3>Special Designations</h3>
+      <label class="check-row"><input type="checkbox" class="f-tag" value="HBCU"> HBCU</label>
+      <label class="check-row"><input type="checkbox" class="f-tag" value="HSI"> Hispanic-Serving (HSI)</label>
+      <label class="check-row"><input type="checkbox" class="f-tag" value="PBI"> Predominantly Black</label>
+      <label class="check-row"><input type="checkbox" class="f-tag" value="Tribal College"> Tribal College</label>
+      <label class="check-row"><input type="checkbox" class="f-tag" value="Women only"> Women's College</label>
+      <label class="check-row"><input type="checkbox" class="f-tag" value="Men only"> Men's College</label>
+      <label class="check-row"><input type="checkbox" class="f-tag" value="Religiously affiliated"> Religiously Affiliated</label>
+
+      <button id="reset-filters" type="button">Reset all filters</button>
+    </aside>
+
+    <main>
+      <div class="results-bar">
+        <div class="count" id="results-count">Loading schools…</div>
+        <select id="sort-select">
+          <option value="name">Sort: Name A–Z</option>
+          <option value="admit_rate_asc">Sort: Most selective first</option>
+          <option value="admit_rate_desc">Sort: Least selective first</option>
+          <option value="net_price_asc">Sort: Lowest net price first</option>
+          <option value="size_desc">Sort: Largest enrollment first</option>
+          <option value="grad_rate_desc">Sort: Highest grad rate first</option>
+        </select>
+      </div>
+      <div class="card-grid" id="card-grid"></div>
+      <div class="empty-state" id="empty-state" hidden>No schools match those filters. Try broadening your search.</div>
+      <button id="load-more" hidden>Show more schools</button>
+    </main>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div>College Compass — part of the Family Educational-Planning resources.</div>
+    <div>Data: U.S. Dept. of Education College Scorecard. Not affiliated with or endorsed by any institution.</div>
+  </div>
+</footer>
+
+<script src="js/app.js"></script>
+<script src="js/search.js"></script>
+</body>
+</html>

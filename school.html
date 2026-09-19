@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="page-title">School Profile — College Compass</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a href="index.html" class="brand"><span class="mark">CC</span> College Compass</a>
+    <nav class="main-nav">
+      <a href="index.html">Search Schools</a>
+      <a href="tracker.html">My Tracker</a>
+      <a href="about.html">About This Data</a>
+    </nav>
+    <button class="nav-toggle" aria-label="Toggle menu">&#9776;</button>
+  </div>
+</header>
+
+<div id="loading" class="wrap" style="padding:60px 0; text-align:center; color:#6b6b6b;">Loading school profile…</div>
+<div id="not-found" class="wrap" style="padding:60px 0; text-align:center; color:#6b6b6b;" hidden>
+  <p>We couldn't find that school. It may have closed, merged, or be outside our four-year school dataset.</p>
+  <a class="btn btn-navy" href="index.html">Back to search</a>
+</div>
+
+<div id="school-content" hidden>
+  <section class="detail-hero">
+    <div class="wrap">
+      <div class="breadcrumb"><a href="index.html">Search Schools</a> / <span id="crumb-name"></span></div>
+      <h1 id="school-name"></h1>
+      <div class="loc" id="school-loc"></div>
+      <div class="badges" id="school-badges"></div>
+      <div class="hero-actions">
+        <a class="btn btn-gold" id="pdf-link" href="#" target="_blank" rel="noopener">&#8681; Download PDF Profile</a>
+        <button class="btn btn-outline" id="tracker-btn">+ Add to My Tracker</button>
+        <a class="btn btn-outline" id="website-link" href="#" target="_blank" rel="noopener">Visit Website</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="tile-strip" id="tile-strip"></div>
+
+    <div class="detail-grid">
+      <div class="panel">
+        <h2>Admissions</h2>
+        <div id="admissions-body"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Cost &amp; Financial Aid</h2>
+        <div id="cost-body"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Student Diversity</h2>
+        <div id="diversity-body"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Outcomes</h2>
+        <div id="outcomes-body"></div>
+      </div>
+
+      <div class="panel full-span" id="majors-panel" hidden>
+        <h2>Most Popular Fields of Study</h2>
+        <div id="majors-body"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div>College Compass — part of the Family Educational-Planning resources.</div>
+    <div>Data: U.S. Dept. of Education College Scorecard. Not affiliated with or endorsed by any institution.</div>
+  </div>
+</footer>
+
+<script src="js/app.js"></script>
+<script src="js/school.js"></script>
+</body>
+</html>
