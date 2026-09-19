@@ -70,14 +70,6 @@
   })();
 
   function classify(school, score) {
-    const admitRate = school.admit_rate;
-    if (admitRate !== null && admitRate < 15) {
-      return {
-        bucket: "reach",
-        reason: `Acceptance rate is ${admitRate}% — under 15%, so this is a reach for every applicant regardless of scores.`,
-      };
-    }
-
     let lo = null, hi = null, metricLabel = "";
     if (testType === "sat") {
       if (school.sat25 != null && school.sat75 != null) {
@@ -94,10 +86,7 @@
     }
 
     if (lo === null || hi === null) {
-      if (admitRate === null) return { bucket: "unknown", reason: "No test score range or acceptance rate reported for this school." };
-      if (admitRate < 25) return { bucket: "reach", reason: `Test scores not reported for this school; classified using its ${admitRate}% acceptance rate.` };
-      if (admitRate < 50) return { bucket: "match", reason: `Test scores not reported for this school; classified using its ${admitRate}% acceptance rate.` };
-      return { bucket: "safety", reason: `Test scores not reported for this school; classified using its ${admitRate}% acceptance rate.` };
+      return { bucket: "unknown", reason: "No test score range reported for this school." };
     }
 
     if (score >= hi) {
@@ -109,6 +98,8 @@
     return { bucket: "reach", reason: `Your ${metricLabel} score (${score}) is below this school's 25th percentile (${lo}).` };
   }
 
+  const BUCKET_LABELS = { reach: "Reach", match: "Match", safety: "Safety" };
+
   function cardHtml(school, reason) {
     const added = isInTracker(school.id);
     return `
@@ -116,6 +107,22 @@
         <div class="name"><a href="school.html?id=${school.id}">${escapeHtml(school.name)}</a></div>
         <div class="loc">${escapeHtml(school.city)}, ${escapeHtml(school.state)} · ${school.admit_rate !== null ? school.admit_rate + "% admit rate" : "Admit rate N/R"}</div>
         <div class="reason">${escapeHtml(reason)}</div>
+        <div class="row-actions">
+          <button class="add-mini ${added ? "added" : ""}" data-id="${school.id}">${added ? "✓ In Tracker" : "+ Tracker"}</button>
+        </div>
+      </div>`;
+  }
+
+  function lowAcceptCardHtml(school, bucket, reason) {
+    const added = isInTracker(school.id);
+    const bucketNote = bucket && bucket !== "unknown"
+      ? `Academically for your score: <strong>${BUCKET_LABELS[bucket]}</strong> — ${reason}`
+      : "No test score range reported for this school.";
+    return `
+      <div class="chance-card" data-id="${school.id}">
+        <div class="name"><a href="school.html?id=${school.id}">${escapeHtml(school.name)}</a></div>
+        <div class="loc">${escapeHtml(school.city)}, ${escapeHtml(school.state)} · ${school.admit_rate}% admit rate</div>
+        <div class="reason">${bucketNote}</div>
         <div class="row-actions">
           <button class="add-mini ${added ? "added" : ""}" data-id="${school.id}">${added ? "✓ In Tracker" : "+ Tracker"}</button>
         </div>
@@ -144,36 +151,69 @@
       buckets[key].sort((a, b) => a.school.name.localeCompare(b.school.name));
       document.getElementById(`${key}-count`).textContent = buckets[key].length;
       const listEl = document.getElementById(`${key}-list`);
-      listEl.innerHTML = buckets[key].length
-        ? buckets[key].map((r) => cardHtml(r.school, r.reason)).join("")
-        : `<div class="chance-column-empty">No schools in this category with the current filters.</div>`;
+      renderPaged(listEl, buckets[key], (r) => cardHtml(r.school, r.reason), "No schools in this category with the current filters.");
     }
 
     const note = document.getElementById("unclassified-note");
     note.textContent = buckets.unknown.length
-      ? `${buckets.unknown.length} school${buckets.unknown.length === 1 ? "" : "s"} matching your filters had no test score or acceptance rate data and couldn't be classified.`
+      ? `${buckets.unknown.length} school${buckets.unknown.length === 1 ? "" : "s"} matching your filters had no test score data and couldn't be placed in Reach, Match, or Safety.`
       : "";
+
+    const lowAccept = pool
+      .filter((s) => s.admit_rate !== null && s.admit_rate < 15)
+      .map((s) => ({ school: s, ...classify(s, score) }))
+      .sort((a, b) => a.school.admit_rate - b.school.admit_rate);
+    document.getElementById("lowaccept-count").textContent = lowAccept.length;
+    const lowAcceptList = document.getElementById("lowaccept-list");
+    renderPaged(lowAcceptList, lowAccept, (r) => lowAcceptCardHtml(r.school, r.bucket, r.reason), "No schools under 15% acceptance with the current filters.");
 
     resultsArea.hidden = false;
     noResults.hidden = true;
   });
 
-  document.querySelectorAll(".chance-column").forEach((col) => {
-    col.addEventListener("click", (e) => {
-      if (e.target.classList.contains("add-mini")) {
-        const id = Number(e.target.dataset.id);
-        const school = schools.find((s) => s.id === id);
-        if (!school) return;
-        if (isInTracker(id)) {
-          removeFromTracker(id);
-          e.target.classList.remove("added");
-          e.target.textContent = "+ Tracker";
-        } else {
-          addToTracker(school);
-          e.target.classList.add("added");
-          e.target.textContent = "✓ In Tracker";
-        }
+  const PAGE_SIZE = 24;
+  function renderPaged(container, items, cardFn, emptyMsg) {
+    container._items = items;
+    container._cardFn = cardFn;
+    container._emptyMsg = emptyMsg;
+    container._visible = PAGE_SIZE;
+    drawPaged(container);
+  }
+  function drawPaged(container) {
+    const { _items: items, _cardFn: cardFn, _emptyMsg: emptyMsg, _visible: visible } = container;
+    if (!items.length) {
+      container.innerHTML = `<div class="chance-column-empty">${emptyMsg}</div>`;
+      return;
+    }
+    let html = items.slice(0, visible).map(cardFn).join("");
+    if (visible < items.length) {
+      html += `<button type="button" class="chance-show-more">Show ${Math.min(PAGE_SIZE, items.length - visible)} more (${items.length - visible} left)</button>`;
+    }
+    container.innerHTML = html;
+  }
+
+  resultsArea.addEventListener("click", (e) => {
+    if (e.target.classList.contains("chance-show-more")) {
+      const container = e.target.closest(".chance-list");
+      if (container) {
+        container._visible += PAGE_SIZE;
+        drawPaged(container);
       }
-    });
+      return;
+    }
+    if (e.target.classList.contains("add-mini")) {
+      const id = Number(e.target.dataset.id);
+      const school = schools.find((s) => s.id === id);
+      if (!school) return;
+      if (isInTracker(id)) {
+        removeFromTracker(id);
+        e.target.classList.remove("added");
+        e.target.textContent = "+ Tracker";
+      } else {
+        addToTracker(school);
+        e.target.classList.add("added");
+        e.target.textContent = "✓ In Tracker";
+      }
+    }
   });
 })();

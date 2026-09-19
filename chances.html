@@ -24,7 +24,7 @@
 
 <div class="wrap page-title-bar">
   <h1>Find Reach, Match &amp; Safety Schools</h1>
-  <p>Enter your child's test score to sort schools into three groups based on how their score compares to each school's recent admitted class — plus a built-in rule that any school admitting under 15% of applicants counts as a reach for everyone, regardless of scores.</p>
+  <p>Enter your child's test score to sort schools into three groups based on how their score compares to each school's recent admitted class. Schools with acceptance rates under 15% are broken out separately below, since those are highly competitive for every applicant regardless of test scores.</p>
 </div>
 
 <div class="wrap">
@@ -55,7 +55,7 @@
       </div>
     </div>
     <div class="chances-note">
-      <strong>A note on GPA:</strong> the federal College Scorecard dataset this site runs on doesn't publish admitted students' GPA, class rank, or course rigor — only standardized test scores and acceptance rates. So the classification below is based on test scores and acceptance rate only. Your GPA is shown for your own reference; weigh it (and course rigor) as important context the algorithm can't see.
+      <strong>A note on GPA:</strong> the federal College Scorecard dataset this site runs on doesn't publish admitted students' GPA, class rank, or course rigor — only standardized test scores and acceptance rates. So Reach/Match/Safety below is based on test scores only. Your GPA is shown for your own reference; weigh it (and course rigor) as important context the algorithm can't see.
     </div>
     <button type="submit" id="find-schools-btn">Find My Schools</button>
   </form>
@@ -66,9 +66,9 @@
         <div class="chance-header reach">
           <span class="count" id="reach-count">0</span>
           <span>Reach Schools</span>
-          <span class="desc">Score below this school's 25th percentile, or acceptance rate under 15%</span>
+          <span class="desc">Score below this school's 25th percentile</span>
         </div>
-        <div id="reach-list"></div>
+        <div id="reach-list" class="chance-list"></div>
       </div>
       <div class="chance-column match-col">
         <div class="chance-header match">
@@ -76,7 +76,7 @@
           <span>Match Schools</span>
           <span class="desc">Score falls within the middle 50% of admitted students</span>
         </div>
-        <div id="match-list"></div>
+        <div id="match-list" class="chance-list"></div>
       </div>
       <div class="chance-column safety-col">
         <div class="chance-header safety">
@@ -84,10 +84,19 @@
           <span>Safety Schools</span>
           <span class="desc">Score at or above this school's 75th percentile</span>
         </div>
-        <div id="safety-list"></div>
+        <div id="safety-list" class="chance-list"></div>
       </div>
     </div>
     <p class="unclassified-note" id="unclassified-note"></p>
+
+    <div class="lowaccept-section">
+      <div class="chance-header lowaccept">
+        <span class="count" id="lowaccept-count">0</span>
+        <span>Low Acceptance Rate Schools</span>
+        <span class="desc">Acceptance rate under 15% — highly competitive for every applicant, no matter how strong the test scores. Worth a look regardless of which category above your child's score falls into.</span>
+      </div>
+      <div class="card-grid chance-list" id="lowaccept-list"></div>
+    </div>
   </div>
 
   <div id="no-results" class="empty-state">Enter a test score above and click "Find My Schools" to get started.</div>

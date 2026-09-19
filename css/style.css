@@ -618,6 +618,12 @@ table.tracker-table textarea { min-height: 36px; resize: vertical; }
 .chance-header.reach { background: var(--red); }
 .chance-header.match { background: var(--navy); }
 .chance-header.safety { background: var(--green); }
+.chance-header.lowaccept { background: var(--navy-light); }
+.chance-header.lowaccept .desc { max-width: 640px; }
+
+.lowaccept-section { margin-top: 36px; }
+.lowaccept-section .chance-header { margin-bottom: 14px; }
+.lowaccept-section .card-grid .chance-card { border-left-color: var(--gold); }
 .chance-header .count { font-size: 1.6rem; display: block; }
 .chance-header .desc { font-size: 0.76rem; font-weight: 400; opacity: 0.9; display: block; margin-top: 2px; }
 .chance-card {
@@ -648,6 +654,18 @@ table.tracker-table textarea { min-height: 36px; resize: vertical; }
 }
 .chance-card .add-mini.added { background: var(--gold); border-color: var(--gold); }
 .chance-column-empty { color: var(--muted); font-size: 0.85rem; padding: 10px; }
+.chance-show-more {
+  width: 100%;
+  padding: 9px;
+  background: var(--navy-pale);
+  border: none;
+  border-radius: 6px;
+  color: var(--navy);
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.82rem;
+}
+.chance-show-more:hover { background: var(--gold-light); }
 .unclassified-note {
   text-align: center;
   color: var(--muted);
