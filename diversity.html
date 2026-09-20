@@ -86,13 +86,22 @@
       <div class="form-field">
         <label>Sort By</label>
         <select id="sort-input">
-          <option value="diversity_index">Diversity Index (most diverse first)</option>
-          <option value="black">Highest % Black first</option>
-          <option value="hispanic">Highest % Hispanic/Latino first</option>
-          <option value="asian">Highest % Asian first</option>
-          <option value="two_or_more">Highest % Two or More Races first</option>
-          <option value="white">Highest % White first</option>
-          <option value="name">Name A–Z</option>
+          <optgroup label="Diversity">
+            <option value="diversity_index">Diversity Index (most diverse first)</option>
+            <option value="black">Highest % Black first</option>
+            <option value="hispanic">Highest % Hispanic/Latino first</option>
+            <option value="asian">Highest % Asian first</option>
+            <option value="two_or_more">Highest % Two or More Races first</option>
+            <option value="white">Highest % White first</option>
+          </optgroup>
+          <optgroup label="General">
+            <option value="name">Name A–Z</option>
+            <option value="admit_rate_asc">Most selective first</option>
+            <option value="admit_rate_desc">Least selective first</option>
+            <option value="net_price_asc">Lowest net price first</option>
+            <option value="size_desc">Largest enrollment first</option>
+            <option value="grad_rate_desc">Highest grad rate first</option>
+          </optgroup>
         </select>
       </div>
     </div>

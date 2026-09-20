@@ -82,6 +82,8 @@
     ["SAT Math (25th–75th pctile)", sat.math_25 ? `${sat.math_25}–${sat.math_75}` : "Not reported"],
     ["SAT Average", sat.avg ? sat.avg : "Not reported"],
     ["ACT Composite (25th–75th pctile)", act.composite_25 ? `${act.composite_25}–${act.composite_75}` : "Not reported"],
+    ["Student-to-faculty ratio", d.student_faculty_ratio ? `${Math.round(d.student_faculty_ratio)}:1` : "Not reported"],
+    ["Full-time faculty", fmtPct(d.pct_full_time_faculty)],
   ]);
 
   // Cost

@@ -115,12 +115,29 @@
     });
 
     const sortKey = sortInput.value;
+    const byNullLast = (a, b, key, dir) => {
+      if (a[key] === null && b[key] === null) return 0;
+      if (a[key] === null || a[key] === undefined) return 1;
+      if (b[key] === null || b[key] === undefined) return -1;
+      return (a[key] - b[key]) * dir;
+    };
+    const DIVERSITY_KEYS = ["black", "hispanic", "asian", "two_or_more", "white"];
     if (sortKey === "name") {
       pool = [...pool].sort((a, b) => a.name.localeCompare(b.name));
     } else if (sortKey === "diversity_index") {
       pool = [...pool].sort((a, b) => (b.diversity_index ?? -1) - (a.diversity_index ?? -1));
-    } else {
+    } else if (DIVERSITY_KEYS.includes(sortKey)) {
       pool = [...pool].sort((a, b) => ((b.diversity || {})[sortKey] ?? -1) - ((a.diversity || {})[sortKey] ?? -1));
+    } else if (sortKey === "admit_rate_asc") {
+      pool = [...pool].sort((a, b) => byNullLast(a, b, "admit_rate", 1));
+    } else if (sortKey === "admit_rate_desc") {
+      pool = [...pool].sort((a, b) => byNullLast(a, b, "admit_rate", -1));
+    } else if (sortKey === "net_price_asc") {
+      pool = [...pool].sort((a, b) => byNullLast(a, b, "net_price", 1));
+    } else if (sortKey === "size_desc") {
+      pool = [...pool].sort((a, b) => byNullLast(a, b, "size", -1));
+    } else if (sortKey === "grad_rate_desc") {
+      pool = [...pool].sort((a, b) => byNullLast(a, b, "grad_rate", -1));
     }
 
     resultsCount.textContent = `${pool.length.toLocaleString()} school${pool.length === 1 ? "" : "s"} match`;
