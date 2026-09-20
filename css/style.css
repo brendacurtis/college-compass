@@ -673,6 +673,41 @@ table.tracker-table textarea { min-height: 36px; resize: vertical; }
   margin-top: 6px;
 }
 
+/* Diversity search */
+.quick-fill-row { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+.quick-fill-btn {
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--navy);
+  background: #fff;
+  color: var(--navy);
+  font-weight: 600;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.quick-fill-btn:hover { background: var(--navy-pale); }
+.quick-fill-btn.clear { border-color: var(--border); color: var(--muted); }
+
+.index-pill {
+  display: inline-block;
+  background: var(--navy);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: 999px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+.diversity-card .breakdown-line {
+  font-size: 0.8rem;
+  color: var(--text);
+  margin: 6px 0;
+  line-height: 1.5;
+}
+.diversity-card .breakdown-line .grp { color: var(--muted); }
+.diversity-card .breakdown-line .met { color: var(--green); font-weight: 700; }
+
 @media print {
   .site-header, .site-footer, .hero-actions, .filters, #load-more, .tracker-toolbar .actions, .remove-btn { display: none !important; }
   body { background: #fff; }

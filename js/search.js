@@ -8,6 +8,7 @@
   const stateSelect = document.getElementById("f-state");
   const sizeSelect = document.getElementById("f-size");
   const selectivitySelect = document.getElementById("f-selectivity");
+  const localeSelect = document.getElementById("f-locale");
   const priceInput = document.getElementById("f-price");
   const sortSelect = document.getElementById("sort-select");
   const resetBtn = document.getElementById("reset-filters");
@@ -44,6 +45,7 @@
     const controls = getCheckedValues(".f-control");
     const size = sizeSelect.value;
     const selectivity = selectivitySelect.value;
+    const locale = localeSelect.value;
     const maxPrice = priceInput.value ? Number(priceInput.value) : null;
     const tags = getCheckedValues(".f-tag");
 
@@ -56,6 +58,7 @@
       if (controls.length && !controls.includes(s.control)) return false;
       if (size && s.size_bucket !== size) return false;
       if (selectivity && s.selectivity !== selectivity) return false;
+      if (locale && s.locale_bucket !== locale) return false;
       if (maxPrice !== null && (s.net_price === null || s.net_price > maxPrice)) return false;
       if (tags.length && !tags.every((t) => (s.designations || []).includes(t))) return false;
       return true;
@@ -144,7 +147,7 @@
     e.preventDefault();
     applyFilters();
   });
-  [stateSelect, sizeSelect, selectivitySelect, sortSelect].forEach((el) =>
+  [stateSelect, sizeSelect, selectivitySelect, localeSelect, sortSelect].forEach((el) =>
     el.addEventListener("change", applyFilters)
   );
   priceInput.addEventListener("input", () => {
@@ -161,6 +164,7 @@
     stateSelect.value = "";
     sizeSelect.value = "";
     selectivitySelect.value = "";
+    localeSelect.value = "";
     priceInput.value = "";
     sortSelect.value = "name";
     document.querySelectorAll(".f-control, .f-tag").forEach((el) => (el.checked = false));

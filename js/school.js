@@ -132,6 +132,10 @@
     divHtml += bar("Women", gender.women, "#b4694e") + bar("Men", gender.men, "#8fa6c9");
   }
   document.getElementById("diversity-body").innerHTML = divHtml || "<p>Diversity data not reported for this school.</p>";
+  document.getElementById("diversity-index-pill").innerHTML =
+    d.diversity_index !== null && d.diversity_index !== undefined
+      ? `<span class="index-pill" title="Simpson's Diversity Index — see About This Data for what this measures">Diversity Index ${d.diversity_index}</span>`
+      : "";
 
   // Outcomes
   document.getElementById("outcomes-body").innerHTML = kv([

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diversity Search — College Compass</title>
+<meta name="description" content="Search colleges by minimum undergraduate representation for specific race/ethnicity groups, or sort by an overall Diversity Index.">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a href="index.html" class="brand"><span class="mark">CC</span> College Compass</a>
+    <nav class="main-nav">
+      <a href="index.html">Search Schools</a>
+      <a href="chances.html">Find My Schools</a>
+      <a href="diversity.html" class="active">Diversity Search</a>
+      <a href="tracker.html">My Tracker</a>
+      <a href="about.html">About This Data</a>
+    </nav>
+    <button class="nav-toggle" aria-label="Toggle menu">&#9776;</button>
+  </div>
+</header>
+
+<div class="wrap page-title-bar">
+  <h1>Diversity Search</h1>
+  <p>Set a minimum percentage for any group — for example, "at least 8% Black" or "at least 20% Hispanic/Latino" — and see which schools meet it. Nationally, undergraduate populations run roughly 50% White, 19% Hispanic/Latino, 11% Black, 6% Asian, and 4% multiracial; use "Match National Averages" below as a starting point, then adjust.</p>
+</div>
+
+<div class="wrap">
+  <form class="chances-form" id="diversity-form">
+    <div class="quick-fill-row">
+      <button type="button" class="quick-fill-btn" id="fill-national">Match National Averages</button>
+      <button type="button" class="quick-fill-btn clear" id="clear-fields">Clear All</button>
+    </div>
+    <div class="form-grid" id="min-grid">
+      <div class="form-field">
+        <label>Min. % Black / African American</label>
+        <input type="number" class="min-input" data-key="black" min="0" max="100" step="1" placeholder="Any">
+      </div>
+      <div class="form-field">
+        <label>Min. % Hispanic / Latino</label>
+        <input type="number" class="min-input" data-key="hispanic" min="0" max="100" step="1" placeholder="Any">
+      </div>
+      <div class="form-field">
+        <label>Min. % Asian</label>
+        <input type="number" class="min-input" data-key="asian" min="0" max="100" step="1" placeholder="Any">
+      </div>
+      <div class="form-field">
+        <label>Min. % White</label>
+        <input type="number" class="min-input" data-key="white" min="0" max="100" step="1" placeholder="Any">
+      </div>
+      <div class="form-field">
+        <label>Min. % Two or More Races</label>
+        <input type="number" class="min-input" data-key="two_or_more" min="0" max="100" step="1" placeholder="Any">
+      </div>
+      <div class="form-field">
+        <label>Min. % American Indian / Alaska Native</label>
+        <input type="number" class="min-input" data-key="aian" min="0" max="100" step="1" placeholder="Any">
+      </div>
+      <div class="form-field">
+        <label>Min. % Native Hawaiian / Pacific Islander</label>
+        <input type="number" class="min-input" data-key="nhpi" min="0" max="100" step="1" placeholder="Any">
+      </div>
+      <div class="form-field">
+        <label>Min. % International Students</label>
+        <input type="number" class="min-input" data-key="nonresident_alien" min="0" max="100" step="1" placeholder="Any">
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-field">
+        <label>State (optional)</label>
+        <select id="state-input"><option value="">Any state</option></select>
+      </div>
+      <div class="form-field">
+        <label>Campus Setting (optional)</label>
+        <select id="locale-input">
+          <option value="">Any setting</option>
+          <option value="City">City</option>
+          <option value="Suburb">Suburb</option>
+          <option value="Town">Town</option>
+          <option value="Rural">Rural</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Sort By</label>
+        <select id="sort-input">
+          <option value="diversity_index">Diversity Index (most diverse first)</option>
+          <option value="black">Highest % Black first</option>
+          <option value="hispanic">Highest % Hispanic/Latino first</option>
+          <option value="asian">Highest % Asian first</option>
+          <option value="two_or_more">Highest % Two or More Races first</option>
+          <option value="white">Highest % White first</option>
+          <option value="name">Name A–Z</option>
+        </select>
+      </div>
+    </div>
+    <div class="chances-note">
+      <strong>About the Diversity Index:</strong> this is a standard measure (Simpson's Diversity Index) of how evenly a student body is spread across race/ethnicity groups — it's the probability that two students picked at random are from different groups. It rewards an even mix, so it isn't the same thing as "how many underrepresented students attend." A historically Black college with a large majority-Black population, for example, can score lower on this index than a highly mixed school, even though it plays a distinct and important role in access for Black students. Use the specific % filters above if a particular group's representation is what you're looking for; use the index as a rough "how mixed is the student body" gauge, not a substitute.
+    </div>
+    <button type="submit" id="find-schools-btn">Search Schools</button>
+  </form>
+
+  <div id="results-area" hidden>
+    <div class="results-bar">
+      <div class="count" id="results-count"></div>
+    </div>
+    <div class="card-grid chance-list" id="results-list"></div>
+  </div>
+
+  <div id="no-results" class="empty-state">Set a filter above (or just pick a sort order) and click "Search Schools" to get started.</div>
+</div>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div>College Compass — part of the Family Educational-Planning resources.</div>
+    <div>Data: U.S. Dept. of Education College Scorecard. Not affiliated with or endorsed by any institution.</div>
+  </div>
+</footer>
+
+<script src="js/app.js"></script>
+<script src="js/diversity.js"></script>
+</body>
+</html>
