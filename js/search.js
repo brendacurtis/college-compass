@@ -146,6 +146,14 @@
   searchForm.addEventListener("submit", (e) => {
     e.preventDefault();
     applyFilters();
+    document.querySelector(".results-bar").scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  const filtersPanel = document.getElementById("filters");
+  const toggleFilters = document.getElementById("toggle-filters");
+  toggleFilters.addEventListener("click", () => {
+    const open = filtersPanel.classList.toggle("open");
+    toggleFilters.textContent = open ? "Hide Filters" : "Show Filters";
+    toggleFilters.setAttribute("aria-expanded", open);
   });
   [stateSelect, sizeSelect, selectivitySelect, localeSelect, sortSelect].forEach((el) =>
     el.addEventListener("change", applyFilters)

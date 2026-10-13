@@ -178,8 +178,23 @@ img, svg { max-width: 100%; }
   padding: 28px 0 60px;
   align-items: start;
 }
+.filters-toggle { display: none; }
 @media (max-width: 860px) {
-  .browse { grid-template-columns: 1fr; }
+  .browse { grid-template-columns: 1fr; gap: 14px; padding-top: 18px; }
+  .filters-toggle {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background: var(--navy);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+  }
+  .filters { display: none; position: static; }
+  .filters.open { display: block; }
 }
 
 .filters {
