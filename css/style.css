@@ -726,6 +726,21 @@ table.tracker-table textarea { min-height: 36px; resize: vertical; }
 .diversity-card .breakdown-line .grp { color: var(--muted); }
 .diversity-card .breakdown-line .met { color: var(--green); font-weight: 700; }
 
+/* Extracurricular weighting (school profile) */
+.ec-row { display: flex; align-items: center; gap: 12px; padding: 7px 0; border-bottom: 1px dashed var(--border); font-size: 0.9rem; }
+.ec-label { flex: 1; }
+.ec-meter { letter-spacing: 3px; color: var(--gold); font-size: 0.7rem; white-space: nowrap; }
+.ec-meter .off { color: var(--border); }
+.ec-level { min-width: 128px; text-align: right; font-weight: 700; }
+.ec-level.lvl-VI { color: var(--navy); }
+.ec-level.lvl-I { color: #8a6414; }
+.ec-level.lvl-C { color: var(--muted); }
+.ec-level.lvl-NC { color: #9a9a9a; font-weight: 600; }
+.ec-sub { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 18px 0 4px; }
+.ec-note { color: var(--muted); font-size: 0.85rem; margin: 10px 0; }
+.ec-links { font-size: 0.9rem; margin: 12px 0 4px; }
+@media (max-width: 520px) { .ec-meter { display: none; } .ec-level { min-width: 110px; } }
+
 /* Build My List */
 .form-subhead { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 6px 0 10px; }
 .sum-line { font-size: 0.85rem; margin: -4px 0 14px; }

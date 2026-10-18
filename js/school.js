@@ -147,6 +147,45 @@
     ["Median earnings, 10 yrs after entry", fmtMoney(d.earnings_10yr)],
   ]);
 
+  // Extracurriculars: how the school rates admission factors, from its Common Data Set (section C7).
+  (async function renderExtracurriculars() {
+    let ec = {};
+    try { ec = await (await fetch("data/ec_weights.json")).json(); } catch (e) { ec = {}; }
+    const entry = ec[d.id];
+    const body = document.getElementById("ec-body");
+    const LEVELS = { VI: ["Very Important", 4], I: ["Important", 3], C: ["Considered", 2], NC: ["Not Considered", 1] };
+    const row = ([key, label], w) => {
+      if (!w[key]) return "";
+      const [text, n] = LEVELS[w[key]];
+      return `<div class="ec-row"><span class="ec-label">${escapeHtml(label)}</span>
+        <span class="ec-meter" aria-hidden="true">${"●".repeat(n)}<span class="off">${"●".repeat(4 - n)}</span></span>
+        <span class="ec-level lvl-${w[key]}">${text}</span></div>`;
+    };
+    if (entry) {
+      const w = entry.w;
+      const activities = [["ec", "Extracurricular activities"], ["talent", "Talent / ability"], ["character", "Character / personal qualities"],
+        ["volunteer", "Volunteer work"], ["work", "Work experience"], ["interest", "Demonstrated interest"]];
+      const academics = [["rigor", "Rigor of high school record"], ["gpa", "Academic GPA"], ["class_rank", "Class rank"],
+        ["tests", "Standardized test scores"], ["essay", "Application essay"], ["recs", "Recommendations"], ["interview", "Interview"]];
+      body.innerHTML = `
+        <p class="ec-note">From this school's own Common Data Set (${escapeHtml(entry.cycle)}, section C7), where it rates how much each factor counts in first-year admission decisions.</p>
+        ${activities.map((r) => row(r, w)).join("")}
+        <h3 class="ec-sub">For comparison</h3>
+        ${academics.map((r) => row(r, w)).join("")}
+        <p class="ec-note">Very Important, Important, Considered, and Not Considered are the school's own ratings. They show how much a factor matters, not what a typical admitted student did.</p>
+        <p class="ec-links"><a href="${escapeHtml(entry.pdf)}" target="_blank" rel="noopener">Read this school's Common Data Set (PDF) →</a>
+        &nbsp; <a href="${escapeHtml(entry.page)}" target="_blank" rel="noopener">All of its Common Data Sets →</a></p>`;
+    } else {
+      const q = encodeURIComponent(d.name + " Common Data Set 2024-2025");
+      const site = d.url ? (d.url.startsWith("http") ? d.url : "https://" + d.url) : null;
+      body.innerHTML = `
+        <p class="ec-note">We haven't added this school's rating yet. Nearly every college publishes one in <strong>section C7 of its Common Data Set</strong>, which rates factors like extracurricular activities, talent, character, and volunteer work as Very Important, Important, Considered, or Not Considered.</p>
+        <p class="ec-links"><a class="btn btn-navy" href="https://www.google.com/search?q=${q}" target="_blank" rel="noopener">Search for this school's Common Data Set →</a>
+        ${site ? `&nbsp; <a href="${escapeHtml(site)}" target="_blank" rel="noopener">School website →</a>` : ""}</p>
+        <p class="ec-note">Once you open the PDF, look for "C7" (usually around page 8-12).</p>`;
+    }
+  })();
+
   // Majors
   if (d.top_majors && d.top_majors.length) {
     document.getElementById("majors-panel").hidden = false;

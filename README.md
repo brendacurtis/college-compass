@@ -28,6 +28,7 @@ site/
   data/schools.json      Compact list of all 2,207 schools (search/filter)
   data/details/<id>.json   Full profile per school (fetched on demand)
   data/meta.json        Build metadata
+  data/ec_weights.json    How a few schools rate extracurriculars (Common Data Set C7; built by scripts/build_ec.py)
   data/geo.json        School coordinates (built by scripts/build_geo.py)
   data/zips.txt        ZIP code coordinates (U.S. Census 2024 ZCTA Gazetteer; built by scripts/build_geo.py)
   pdfs/<id>.pdf        One downloadable PDF profile per school

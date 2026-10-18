@@ -1,0 +1,116 @@
+{
+ "130794": {
+  "cycle": "2024-25",
+  "page": "https://oir.yale.edu/common-data-set",
+  "pdf": "https://oir.yale.edu/sites/default/files/yale_cds_2024-25_rmd_20250612.pdf",
+  "w": {
+   "rigor": "VI",
+   "class_rank": "VI",
+   "gpa": "VI",
+   "tests": "C",
+   "essay": "VI",
+   "recs": "VI",
+   "interview": "C",
+   "ec": "VI",
+   "talent": "VI",
+   "character": "VI"
+  }
+ },
+ "198419": {
+  "cycle": "2024-25",
+  "page": "https://provost.duke.edu/administrative-resources/institutional-research/",
+  "pdf": "https://ir.provost.duke.edu/sites/default/files/CDS-2024-25-Final-2.pdf",
+  "w": {
+   "rigor": "VI",
+   "class_rank": "I",
+   "gpa": "VI",
+   "tests": "C",
+   "essay": "C",
+   "recs": "VI",
+   "interview": "C",
+   "ec": "VI",
+   "talent": "VI",
+   "character": "VI",
+   "volunteer": "C",
+   "work": "C",
+   "interest": "C"
+  }
+ },
+ "227757": {
+  "cycle": "2024-25",
+  "page": "https://ideas.rice.edu/reporting-analytics/common-data-set/",
+  "pdf": "https://ideas.rice.edu/wp-content/uploads/2025/10/CDS_2024-25_WEBSITE.pdf",
+  "w": {
+   "rigor": "VI",
+   "class_rank": "VI",
+   "gpa": "VI",
+   "tests": "VI",
+   "essay": "VI",
+   "recs": "VI",
+   "interview": "C",
+   "ec": "VI",
+   "talent": "VI",
+   "character": "VI",
+   "volunteer": "C",
+   "work": "C",
+   "interest": "C"
+  }
+ },
+ "139658": {
+  "cycle": "2024-25",
+  "page": "https://provost.emory.edu/planning-administration/data/common-data-set.html",
+  "pdf": "https://provost.emory.edu/planning-administration/_includes/documents/sections/institutional-data/emory-common-data-set-2024-2025.pdf",
+  "w": {
+   "rigor": "VI",
+   "class_rank": "C",
+   "gpa": "VI",
+   "tests": "I",
+   "essay": "I",
+   "recs": "VI",
+   "interview": "C",
+   "ec": "VI",
+   "talent": "VI",
+   "character": "VI"
+  }
+ },
+ "199120": {
+  "cycle": "2024-25",
+  "page": "https://oira.unc.edu/reports/reports-archives/common-data-set/",
+  "pdf": "https://oira.unc.edu/wp-content/uploads/sites/297/2025/08/CDS_UNCCH_2024-25_20250829.pdf",
+  "w": {
+   "rigor": "VI",
+   "class_rank": "I",
+   "gpa": "I",
+   "tests": "C",
+   "essay": "I",
+   "recs": "I",
+   "interview": "NC",
+   "ec": "I",
+   "talent": "I",
+   "character": "I",
+   "volunteer": "I",
+   "work": "I",
+   "interest": "NC"
+  }
+ },
+ "234076": {
+  "cycle": "2024-25",
+  "page": "https://ira.virginia.edu/data-analytics/common-data-set-initiatve",
+  "pdf": "https://ira.virginia.edu/sites/ira/files/2025-03/CDS_2024-2025_508.pdf",
+  "w": {
+   "rigor": "VI",
+   "class_rank": "VI",
+   "gpa": "VI",
+   "tests": "C",
+   "essay": "I",
+   "recs": "I",
+   "interview": "NC",
+   "ec": "I",
+   "talent": "I",
+   "character": "VI",
+   "volunteer": "C",
+   "work": "C",
+   "interest": "NC"
+  }
+ }
+}
