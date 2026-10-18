@@ -749,6 +749,10 @@ details.prefs[open] summary { margin-bottom: 14px; }
 .adj-row label { display: flex; gap: 4px; align-items: center; }
 .adj-row select, .forced-chip select { font-size: 0.78rem; padding: 3px 6px; border: 1px solid var(--border); border-radius: 6px; background: #fff; }
 .forced-chip button { background: none; border: none; color: var(--red); cursor: pointer; font-size: 1.1rem; }
+.mode-tabs { display: flex; gap: 0; margin: 22px 0 0; max-width: 520px; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; background: #fff; }
+.mode-tabs button { flex: 1; padding: 11px 14px; border: none; background: #fff; cursor: pointer; font-weight: 700; font-size: 0.88rem; color: var(--muted); }
+.mode-tabs button.active { background: var(--navy); color: #fff; }
+.mode-tabs + .chances-form { margin-top: 12px; }
 .chance-card { position: relative; }
 .remove-mini { position: absolute; top: 6px; right: 8px; background: none; border: none; color: var(--muted); font-size: 1.3rem; line-height: 1; cursor: pointer; padding: 2px 6px; border-radius: 6px; }
 .remove-mini:hover { color: var(--red); background: var(--red-pale); }

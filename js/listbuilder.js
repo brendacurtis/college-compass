@@ -155,6 +155,31 @@
   $("toggle-act").addEventListener("click", () => setMode("act"));
   $("toggle-none").addEventListener("click", () => setMode("none"));
 
+  /* ---- build vs. check mode ---- */
+  let listMode = "build";
+  const BUILD_TEXT = ["Build My College List", "Enter your GPA and test score, how many schools you can apply to, and how many you want in each category. We'll pick a balanced list that favors the schools you're most likely to get into, and show your odds of getting at least 1, 2, 3 or more acceptances."];
+  const CHECK_TEXT = ["Check My College List", "Already have a list? Enter your GPA and test score, add each school below, and we'll estimate your chance at every one, sort them into reach, high target, target and safety, and show your odds of at least 1, 2, 3 or more acceptances."];
+  function setListMode(m) {
+    listMode = m;
+    const check = m === "check";
+    $("mode-build").classList.toggle("active", !check);
+    $("mode-check").classList.toggle("active", check);
+    $("page-h1").textContent = (check ? CHECK_TEXT : BUILD_TEXT)[0];
+    $("page-p").textContent = (check ? CHECK_TEXT : BUILD_TEXT)[1];
+    $("total-field").style.display = check ? "none" : "";
+    $("counts-block").style.display = check ? "none" : "";
+    $("prefs-panel").style.display = check ? "none" : "";
+    $("find-schools-btn").textContent = check ? "Check My List" : "Build My List";
+    $("special-summary").textContent = check ? "Your schools: add each one, with your legacy status and application round" : "Legacy, early action / early decision, and must-have schools (optional)";
+    $("special-note").textContent = check
+      ? "Search for each school you're applying to and add it. For each, say whether you're a legacy there and whether you'll apply regular decision, early action, or binding early decision. You can change these again after checking."
+      : "Legacy status and early rounds only help at specific schools, so add the schools you're a legacy at or are sure you want, and choose how you'll apply to each. You can also change these on any school after your list is built.";
+    $("special-panel").open = check;
+    $("results").hidden = true;
+  }
+  $("mode-build").addEventListener("click", () => setListMode("build"));
+  $("mode-check").addEventListener("click", () => setListMode("check"));
+
   const countIds = { reach: "n-reach", high: "n-high", target: "n-target", safety: "n-safety" };
   function defaultCounts(N) {
     let reach = N >= 15 ? 3 : N >= 4 ? 2 : 1;
@@ -324,6 +349,22 @@
       ? `${items.length} school${items.length === 1 ? "" : "s"} on your list. Expected acceptances: ${all.reduce((a, b) => a + b, 0).toFixed(1)}. Chance of at least one: ${fmtPctChance(alAll[1] ?? 0)}.`
       : "No schools match your preferences. Try loosening them.";
 
+    const g = $("guidance");
+    if (listMode === "check" && items.length) {
+      const n = (k) => byCat[k].length;
+      const tips = [];
+      if (n("safety") < 2) tips.push(n("safety") ? "only 1 safety school" : "no safety school");
+      if (n("reach") > 4) tips.push(n("reach") + " reach schools is a lot");
+      if (n("target") + n("high") < 3) tips.push("few target or high target schools");
+      g.hidden = false;
+      g.innerHTML = `<strong>Your list:</strong> ${n("reach")} reach, ${n("high")} high target, ${n("target")} target, ${n("safety")} safety. A balanced list usually has 2-3 reach, 3-5 target (including high target), and 2-3 safety schools.` +
+        (tips.length ? ` <strong>Worth a look:</strong> ${tips.join("; ")}. Switch to <em>Build a list for me</em> to fill the gaps; the schools you added here carry over.` : " That looks balanced.");
+    } else if (listMode === "check") {
+      g.hidden = false; g.textContent = "Add at least one school to your list.";
+    } else {
+      g.hidden = true;
+    }
+
     const edCount = items.filter((i) => i.adj.round === "ed").length;
     const w = $("adj-warning");
     w.hidden = edCount < 2;
@@ -369,7 +410,15 @@
 
   function build() {
     if (!schools.length) return;
-    if (!updateSum()) { $("sum-line").scrollIntoView({ block: "center" }); return; }
+    if (listMode === "build" && !updateSum()) { $("sum-line").scrollIntoView({ block: "center" }); return; }
+    if (listMode === "check" && !forced.size) {
+      $("special-panel").open = true;
+      $("forced-search").focus();
+      $("guidance").hidden = false;
+      $("guidance").textContent = "Add at least one school to your list first.";
+      $("results").hidden = false;
+      return;
+    }
     const gpa = Number($("gpa-input").value);
     let sat = null;
     if (mode !== "none") {
@@ -377,9 +426,9 @@
       if (!raw) { scoreInput.focus(); return; }
       sat = mode === "act" ? actToSat(raw) : raw;
     }
-    const counts = readCounts();
+    const counts = listMode === "check" ? { reach: 0, high: 0, target: 0, safety: 0 } : readCounts();
     requestedCounts = { ...counts };
-    inputs = { sat, gpa, sortMode: $("p-sort").value };
+    inputs = { sat, gpa, sortMode: listMode === "check" ? "chance" : $("p-sort").value };
 
     const state = $("p-state").value, locale = $("p-locale").value, size = $("p-size").value, control = $("p-control").value;
     const maxPrice = $("p-price").value ? Number($("p-price").value) : null;
@@ -401,6 +450,7 @@
 
     const buckets = { reach: [], high: [], target: [], safety: [] };
     for (const s of schools) {
+      if (listMode === "check") break;
       if (forced.has(s.id)) continue;
       if (s.control === "Private for-profit") continue;
       if (SERVICE_ACADEMY.test(s.name)) continue;
@@ -421,6 +471,7 @@
 
     const short = [];
     removedItems = [];
+    candidates = { reach: [], high: [], target: [], safety: [] };
     for (const c of CATS) {
       buckets[c.key].sort(sorters[inputs.sortMode]);
       candidates[c.key] = buckets[c.key];
