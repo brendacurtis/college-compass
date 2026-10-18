@@ -596,6 +596,7 @@ table.tracker-table textarea { min-height: 36px; resize: vertical; }
   color: var(--muted);
 }
 .test-toggle button.active { background: var(--navy); color: #fff; }
+.test-toggle button { white-space: nowrap; padding-left: 8px; padding-right: 8px; }
 .chances-note {
   background: var(--navy-pale);
   border-radius: 8px;
