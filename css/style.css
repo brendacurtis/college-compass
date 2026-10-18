@@ -741,6 +741,14 @@ details.prefs[open] summary { margin-bottom: 14px; }
 .matrix-table td.dim { color: var(--muted); }
 .matrix-note { color: var(--muted); font-size: 0.82rem; margin: 10px 0 30px; max-width: 720px; }
 .results-bar .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.forced-results { margin-top: 6px; max-height: 220px; overflow-y: auto; }
+.forced-results .add-result-row { background: #fff; }
+.forced-chip { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; background: var(--navy-pale); border-radius: 8px; padding: 8px 12px; margin-top: 8px; font-size: 0.88rem; }
+.forced-chip strong { flex: 1 1 200px; }
+.adj-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 6px 0; font-size: 0.76rem; color: var(--muted); }
+.adj-row label { display: flex; gap: 4px; align-items: center; }
+.adj-row select, .forced-chip select { font-size: 0.78rem; padding: 3px 6px; border: 1px solid var(--border); border-radius: 6px; background: #fff; }
+.forced-chip button { background: none; border: none; color: var(--red); cursor: pointer; font-size: 1.1rem; }
 @media print { .chances-form, .results-bar .actions, #m-independent, .add-mini { display: none !important; } }
 
 @media print {

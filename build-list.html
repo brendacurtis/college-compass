@@ -63,6 +63,15 @@
     </div>
     <div class="sum-line" id="sum-line"></div>
 
+    <details class="prefs" id="special-panel">
+      <summary>Legacy, early action / early decision, and must-have schools (optional)</summary>
+      <p class="matrix-note">Legacy status and early rounds only help at specific schools, so add the schools you're a legacy at or are sure you want, and choose how you'll apply to each. You can also change these on any school after your list is built.</p>
+      <div class="form-field"><label>Add a specific school</label>
+        <input type="text" id="forced-search" placeholder="Search for a school by name…" autocomplete="off">
+        <div id="forced-results" class="forced-results"></div></div>
+      <div id="forced-chips"></div>
+    </details>
+
     <details class="prefs">
       <summary>Optional preferences (narrow the schools we choose from)</summary>
       <div class="form-grid prefs-grid">
@@ -102,6 +111,7 @@
       </div>
     </div>
     <div id="shortfall" class="chances-note" hidden></div>
+    <div id="adj-warning" class="chances-note" hidden></div>
     <div id="list-area"></div>
 
     <h2 class="section-h">Your odds of at least n acceptances</h2>

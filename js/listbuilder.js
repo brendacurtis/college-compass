@@ -10,11 +10,17 @@
   // Model constants (documented on the About page).
   const COEF = 0.6;          // log-odds change per standard deviation above/below the school's admitted midpoint
   const CAP_BELOW = 25;      // schools under this admit rate (%) ...
-  const CAP_MULT = 2;        // ... can't exceed this multiple of their admit rate
+  const CAP_MULT = 2;        // ... can't exceed this multiple of their admit rate (times any legacy/early boost)
   const SIGMA = 0.7;         // shared "applicant quality" strength for the realistic odds matrix
 
   // Category cutoffs on estimated chance.
   const REACH_BELOW = 0.15, HIGH_BELOW = 0.40, TARGET_BELOW = 0.75, SAFETY_MIN_ADMIT = 50;
+
+  // Legacy and early-round odds multipliers by school selectivity: [under 25% admit, 25-50%, 50%+].
+  const LEGACY = { none: [1, 1, 1], parent_ug: [3, 1.5, 1], parent_grad: [1.5, 1.2, 1], sibling: [1.15, 1.1, 1] };
+  const ROUND = { rd: [1, 1, 1], ea: [2, 1.4, 1], ed: [2.5, 1.8, 1.2] };
+  const tier = (s) => (s.admit_rate < 25 ? 0 : s.admit_rate < 50 ? 1 : 2);
+  const adjMult = (s, adj) => LEGACY[adj.legacy][tier(s)] * ROUND[adj.round][tier(s)];
 
   // Service academies need a nomination and a service commitment, so they aren't suggested as ordinary schools.
   const SERVICE_ACADEMY = /^United States (Military|Naval|Air Force|Coast Guard|Merchant Marine) /;
@@ -42,7 +48,7 @@
     return null;
   }
 
-  function estimate(s, sat, gpa) {
+  function estimate(s, sat, gpa, adj) {
     if (s.admit_rate === null || s.admit_rate === undefined) return null;
     const rng = satRange(s);
     let z = 0;
@@ -50,15 +56,17 @@
       const sd = Math.max(40, (rng.hi - rng.lo) / 1.349);
       z = Math.max(-3, Math.min(3, (sat - (rng.lo + rng.hi) / 2) / sd));
     }
+    const m = adjMult(s, adj);
     const r = Math.max(0.005, Math.min(0.995, s.admit_rate / 100));
-    const odds = (r / (1 - r)) * Math.exp(COEF * z) * gpaMultiplier(gpa);
+    const odds = (r / (1 - r)) * Math.exp(COEF * z) * gpaMultiplier(gpa) * m;
     let p = odds / (1 + odds);
-    if (s.admit_rate < CAP_BELOW) p = Math.min(p, (CAP_MULT * s.admit_rate) / 100);
-    return { p, z, rng, hasTest: sat !== null && !!rng };
+    if (s.admit_rate < CAP_BELOW) p = Math.min(p, (CAP_MULT * m * s.admit_rate) / 100);
+    return { p: Math.min(p, 0.995), z, rng, hasTest: sat !== null && !!rng, boosted: m > 1 };
   }
 
-  function categorize(s, p) {
-    if (s.admit_rate < 15 || p < REACH_BELOW) return "reach";
+  function categorize(s, est) {
+    const p = est.p;
+    if ((s.admit_rate < 15 && !est.boosted) || p < REACH_BELOW) return "reach";
     if (p < HIGH_BELOW) return "high";
     if (p < TARGET_BELOW || s.admit_rate < SAFETY_MIN_ADMIT) return "target";
     return "safety";
@@ -196,125 +204,135 @@
     }
   })();
 
-  let currentPicks = [];
+  /* ---- must-have schools (legacy / early settings set before building) ---- */
+  const forced = new Map(); // id -> { legacy, round }
+  const LEGACY_OPTS = [["none", "Not a legacy"], ["parent_ug", "Parent attended as undergrad"], ["parent_grad", "Parent attended grad school"], ["sibling", "Sibling / other relative"]];
+  const ROUND_OPTS = [["rd", "Regular decision"], ["ea", "Early action (non-binding)"], ["ed", "Early decision (binding)"]];
+  const optHtml = (opts, sel) => opts.map(([v, l]) => `<option value="${v}" ${v === sel ? "selected" : ""}>${l}</option>`).join("");
 
-  function fmtPctChance(p) {
-    if (p < 0.005) return "<1%";
-    if (p > 0.995) return ">99%";
-    return Math.round(p * 100) + "%";
+  $("forced-search").addEventListener("input", () => {
+    const q = $("forced-search").value.trim().toLowerCase();
+    if (!q) { $("forced-results").innerHTML = ""; return; }
+    const matches = schools
+      .filter((s) => s.admit_rate !== null && !SERVICE_ACADEMY.test(s.name) && `${s.name} ${s.city} ${s.state}`.toLowerCase().includes(q))
+      .sort((a, b) => (b.name.toLowerCase().startsWith(q) ? 1 : 0) - (a.name.toLowerCase().startsWith(q) ? 1 : 0) || a.name.length - b.name.length)
+      .slice(0, 8);
+    $("forced-results").innerHTML = matches.length
+      ? matches.map((s) => `<div class="add-result-row"><span>${escapeHtml(s.name)} <span style="color:var(--muted)">— ${escapeHtml(s.city)}, ${escapeHtml(s.state)}</span></span>
+          <button type="button" data-id="${s.id}" ${forced.has(s.id) ? "disabled" : ""}>${forced.has(s.id) ? "Added" : "Add"}</button></div>`).join("")
+      : '<p style="color:var(--muted);font-size:0.85rem">No matches (schools without a reported acceptance rate can\'t be rated).</p>';
+  });
+  $("forced-results").addEventListener("click", (e) => {
+    if (e.target.tagName !== "BUTTON" || e.target.disabled) return;
+    forced.set(Number(e.target.dataset.id), { legacy: "none", round: "rd" });
+    e.target.disabled = true; e.target.textContent = "Added";
+    renderChips();
+  });
+  function renderChips() {
+    $("forced-chips").innerHTML = [...forced.entries()].map(([id, adj]) => {
+      const s = schools.find((x) => x.id === id);
+      return `<div class="forced-chip" data-id="${id}"><strong>${escapeHtml(s.name)}</strong>
+        <select class="chip-legacy">${optHtml(LEGACY_OPTS, adj.legacy)}</select>
+        <select class="chip-round">${optHtml(ROUND_OPTS, adj.round)}</select>
+        <button type="button" class="chip-remove" title="Remove">&times;</button></div>`;
+    }).join("");
+  }
+  $("forced-chips").addEventListener("change", (e) => {
+    const chip = e.target.closest(".forced-chip");
+    if (!chip) return;
+    const id = Number(chip.dataset.id);
+    const adj = forced.get(id);
+    if (e.target.classList.contains("chip-legacy")) adj.legacy = e.target.value;
+    if (e.target.classList.contains("chip-round")) adj.round = e.target.value;
+    const item = items.find((i) => i.school.id === id);
+    if (item) { item.adj = { ...adj }; recompute(); renderAll(false); }
+  });
+  $("forced-chips").addEventListener("click", (e) => {
+    if (!e.target.classList.contains("chip-remove")) return;
+    forced.delete(Number(e.target.closest(".forced-chip").dataset.id));
+    renderChips();
+    $("forced-search").dispatchEvent(new Event("input"));
+  });
+
+  /* ---- build + render ---- */
+  let items = [];     // { school, adj, est, cat }
+  let inputs = null;  // { sat, gpa, sortMode }
+  let requestedCounts = { reach: 0, high: 0, target: 0, safety: 0 };
+
+  const fmtPctChance = (p) => (p < 0.005 ? "<1%" : p > 0.995 ? ">99%" : Math.round(p * 100) + "%");
+  const sorters = {
+    chance: (a, b) => b.est.p - a.est.p || (b.school.grad_rate ?? -1) - (a.school.grad_rate ?? -1),
+    grad: (a, b) => (b.school.grad_rate ?? -1) - (a.school.grad_rate ?? -1) || b.est.p - a.est.p,
+    price: (a, b) => (a.school.net_price ?? 1e9) - (b.school.net_price ?? 1e9) || b.est.p - a.est.p,
+  };
+
+  function recompute() {
+    for (const it of items) {
+      it.est = estimate(it.school, inputs.sat, inputs.gpa, it.adj);
+      it.cat = categorize(it.school, it.est);
+    }
   }
 
   function cardHtml(item) {
-    const s = item.school;
+    const s = item.school, est = item.est;
     const added = isInTracker(s.id);
-    const rng = item.est.rng;
+    const rng = est.rng;
     let fit;
-    if (item.est.hasTest) fit = `Your score vs. this school's middle 50%: ${rng.lo}–${rng.hi} (${rng.src})`;
+    if (est.hasTest) fit = `Your score vs. this school's middle 50%: ${rng.lo}–${rng.hi} (${rng.src})`;
     else if (rng) fit = `Middle 50% of admitted students: ${rng.lo}–${rng.hi} (${rng.src})`;
     else fit = "No test scores reported; rated on acceptance rate only";
+    const note = est.boosted ? ' <span class="badge gold">boosted</span>' : "";
     return `
       <div class="chance-card" data-id="${s.id}">
         <div class="name"><a href="school.html?id=${s.id}">${escapeHtml(s.name)}</a>
-          <span class="index-pill">Est. ${fmtPctChance(item.est.p)}</span></div>
+          <span class="index-pill">Est. ${fmtPctChance(est.p)}</span>${note}</div>
         <div class="loc">${escapeHtml(s.city)}, ${escapeHtml(s.state)} · ${escapeHtml(s.control || "")} · ${s.size !== null ? Number(s.size).toLocaleString() + " undergrads" : "size N/R"}</div>
         <div class="reason">${s.admit_rate}% admit rate · ${s.grad_rate !== null ? s.grad_rate + "% graduate in 6 yrs" : "grad rate N/R"}${s.net_price !== null ? " · avg net price $" + Number(s.net_price).toLocaleString() : ""}</div>
         <div class="reason muted-line">${escapeHtml(fit)}</div>
+        <div class="adj-row">
+          <label>Round <select class="adj-round" data-id="${s.id}">${optHtml(ROUND_OPTS, item.adj.round)}</select></label>
+          <label>Legacy <select class="adj-legacy" data-id="${s.id}">${optHtml(LEGACY_OPTS, item.adj.legacy)}</select></label>
+        </div>
         <div class="row-actions">
           <button class="add-mini ${added ? "added" : ""}" data-id="${s.id}">${added ? "✓ In Tracker" : "+ Tracker"}</button>
         </div>
       </div>`;
   }
 
-  function build() {
-    if (!schools.length) return;
-    if (!updateSum()) { $("sum-line").scrollIntoView({ block: "center" }); return; }
-    const gpa = Number($("gpa-input").value);
-    let sat = null;
-    if (mode !== "none") {
-      const raw = Number(scoreInput.value);
-      if (!raw) { scoreInput.focus(); return; }
-      sat = mode === "act" ? actToSat(raw) : raw;
-    }
-    const counts = readCounts();
-    const N = counts.reach + counts.high + counts.target + counts.safety;
-
-    const state = $("p-state").value, locale = $("p-locale").value, size = $("p-size").value, control = $("p-control").value;
-    const maxPrice = $("p-price").value ? Number($("p-price").value) : null;
-    const minGrad = Number($("p-grad").value) || 0;
-    const minSize = Number($("p-minsize").value) || 0;
-    const allowNoTest = $("p-notest").checked;
-    const sortMode = $("p-sort").value;
-
-    const buckets = { reach: [], high: [], target: [], safety: [] };
-    for (const s of schools) {
-      if (s.control === "Private for-profit") continue;
-      if (SERVICE_ACADEMY.test(s.name)) continue;
-      if ((s.designations || []).includes("Online-only")) continue;
-      if (state && s.state !== state) continue;
-      if (locale && s.locale_bucket !== locale) continue;
-      if (size && s.size_bucket !== size) continue;
-      if (control && s.control !== control) continue;
-      if (maxPrice !== null && (s.net_price === null || s.net_price > maxPrice)) continue;
-      if (minGrad > 0 && (s.grad_rate === null || s.grad_rate < minGrad)) continue;
-      if (minSize > 0 && (s.size === null || s.size < minSize)) continue;
-      const est = estimate(s, sat, gpa);
-      if (!est) continue;
-      if (!allowNoTest && sat !== null && !est.rng) continue;
-      buckets[categorize(s, est.p)].push({ school: s, est });
-    }
-
-    const cmp = {
-      chance: (a, b) => b.est.p - a.est.p || (b.school.grad_rate ?? -1) - (a.school.grad_rate ?? -1),
-      grad: (a, b) => (b.school.grad_rate ?? -1) - (a.school.grad_rate ?? -1) || b.est.p - a.est.p,
-      price: (a, b) => (a.school.net_price ?? 1e9) - (b.school.net_price ?? 1e9) || b.est.p - a.est.p,
-    }[sortMode];
-
-    const picks = {};
-    const short = [];
-    for (const c of CATS) {
-      buckets[c.key].sort(cmp);
-      picks[c.key] = buckets[c.key].slice(0, counts[c.key]);
-      if (picks[c.key].length < counts[c.key]) {
-        short.push(`${c.label}: only ${picks[c.key].length} of the ${counts[c.key]} you asked for match your preferences`);
-      }
-    }
-    currentPicks = CATS.flatMap((c) => picks[c.key]);
-    render(picks, counts, short, N);
-  }
-
-  function render(picks, counts, short, N) {
-    const all = currentPicks.map((i) => i.est.p);
-    const total = all.length;
+  function renderAll(scroll) {
+    const byCat = {};
+    for (const c of CATS) byCat[c.key] = items.filter((i) => i.cat === c.key).sort(sorters[inputs.sortMode]);
+    const all = items.map((i) => i.est.p);
     const realistic = !$("m-independent").checked;
     const alAll = atLeast(all, realistic ? SIGMA : 0);
-    $("results-summary").textContent = total
-      ? `${total} school${total === 1 ? "" : "s"} on your list. Expected acceptances: ${all.reduce((a, b) => a + b, 0).toFixed(1)}. Chance of at least one: ${fmtPctChance(alAll[1] ?? 0)}.`
+    $("results-summary").textContent = items.length
+      ? `${items.length} school${items.length === 1 ? "" : "s"} on your list. Expected acceptances: ${all.reduce((a, b) => a + b, 0).toFixed(1)}. Chance of at least one: ${fmtPctChance(alAll[1] ?? 0)}.`
       : "No schools match your preferences. Try loosening them.";
-    const sf = $("shortfall");
-    sf.hidden = !short.length;
-    sf.innerHTML = short.length
-      ? "<strong>Not enough schools:</strong> " + short.map(escapeHtml).join("; ") + ". Try relaxing your preferences (state, size, price, graduation rate) or lowering that category's count."
-      : "";
+
+    const edCount = items.filter((i) => i.adj.round === "ed").length;
+    const w = $("adj-warning");
+    w.hidden = edCount < 2;
+    w.innerHTML = edCount >= 2 ? "<strong>Early decision is binding</strong> and schools normally allow it at only one school. You've chosen it for " + edCount + "; switch the extras to early action or regular decision." : "";
 
     let html = "";
     for (const c of CATS) {
-      const items = picks[c.key];
-      if (!counts[c.key]) continue;
+      const list = byCat[c.key];
+      if (!list.length && !requestedCounts[c.key]) continue;
       html += `<div class="builder-section">
-        <div class="chance-header ${c.cls}"><span class="count">${items.length}</span><span>${c.label}</span><span class="desc">${c.desc}</span></div>
-        <div class="card-grid">${items.length ? items.map(cardHtml).join("") : '<div class="chance-column-empty">No matching schools.</div>'}</div>
+        <div class="chance-header ${c.cls}"><span class="count">${list.length}</span><span>${c.label}</span><span class="desc">${c.desc}</span></div>
+        <div class="card-grid">${list.length ? list.map(cardHtml).join("") : '<div class="chance-column-empty">No matching schools.</div>'}</div>
       </div>`;
     }
     $("list-area").innerHTML = html;
-    renderMatrix(picks, realistic);
+    renderMatrix(byCat, realistic);
     $("results").hidden = false;
-    $("results").scrollIntoView({ behavior: "smooth", block: "start" });
+    if (scroll) $("results").scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  function renderMatrix(picks, realistic) {
+  function renderMatrix(byCat, realistic) {
     const sigma = realistic ? SIGMA : 0;
-    const cols = [{ label: "All schools", ps: currentPicks.map((i) => i.est.p) }];
-    for (const c of CATS) if (picks[c.key].length) cols.push({ label: c.label, ps: picks[c.key].map((i) => i.est.p) });
+    const cols = [{ label: "All schools", ps: items.map((i) => i.est.p) }];
+    for (const c of CATS) if (byCat[c.key].length) cols.push({ label: c.label, ps: byCat[c.key].map((i) => i.est.p) });
     for (const col of cols) col.al = atLeast(col.ps, sigma);
     const maxN = cols[0].ps.length;
     const cell = (col, k) => (k > col.ps.length ? '<td class="dim">—</td>' : `<td>${fmtPctChance(col.al[k])}</td>`);
@@ -328,14 +346,88 @@
       : "This treats each school as an independent coin flip, which is a little optimistic about getting at least one acceptance.";
   }
 
-  form.addEventListener("submit", (e) => { e.preventDefault(); build(); });
-  $("m-independent").addEventListener("change", () => {
-    if (!currentPicks.length) return;
-    const picks = {};
-    for (const c of CATS) picks[c.key] = currentPicks.filter((i) => categorize(i.school, i.est.p) === c.key);
-    renderMatrix(picks, !$("m-independent").checked);
-  });
+  function build() {
+    if (!schools.length) return;
+    if (!updateSum()) { $("sum-line").scrollIntoView({ block: "center" }); return; }
+    const gpa = Number($("gpa-input").value);
+    let sat = null;
+    if (mode !== "none") {
+      const raw = Number(scoreInput.value);
+      if (!raw) { scoreInput.focus(); return; }
+      sat = mode === "act" ? actToSat(raw) : raw;
+    }
+    const counts = readCounts();
+    requestedCounts = { ...counts };
+    inputs = { sat, gpa, sortMode: $("p-sort").value };
 
+    const state = $("p-state").value, locale = $("p-locale").value, size = $("p-size").value, control = $("p-control").value;
+    const maxPrice = $("p-price").value ? Number($("p-price").value) : null;
+    const minGrad = Number($("p-grad").value) || 0;
+    const minSize = Number($("p-minsize").value) || 0;
+    const allowNoTest = $("p-notest").checked;
+
+    // Must-have schools go in first, in whatever category their adjusted chance lands them.
+    items = [];
+    const forcedCat = { reach: 0, high: 0, target: 0, safety: 0 };
+    for (const [id, adj] of forced) {
+      const s = schools.find((x) => x.id === id);
+      const est = estimate(s, sat, gpa, adj);
+      if (!est) continue;
+      const cat = categorize(s, est);
+      forcedCat[cat]++;
+      items.push({ school: s, adj: { ...adj }, est, cat });
+    }
+
+    const buckets = { reach: [], high: [], target: [], safety: [] };
+    for (const s of schools) {
+      if (forced.has(s.id)) continue;
+      if (s.control === "Private for-profit") continue;
+      if (SERVICE_ACADEMY.test(s.name)) continue;
+      if ((s.designations || []).includes("Online-only")) continue;
+      if (state && s.state !== state) continue;
+      if (locale && s.locale_bucket !== locale) continue;
+      if (size && s.size_bucket !== size) continue;
+      if (control && s.control !== control) continue;
+      if (maxPrice !== null && (s.net_price === null || s.net_price > maxPrice)) continue;
+      if (minGrad > 0 && (s.grad_rate === null || s.grad_rate < minGrad)) continue;
+      if (minSize > 0 && (s.size === null || s.size < minSize)) continue;
+      const adj = { legacy: "none", round: "rd" };
+      const est = estimate(s, sat, gpa, adj);
+      if (!est) continue;
+      if (!allowNoTest && sat !== null && !est.rng) continue;
+      buckets[categorize(s, est)].push({ school: s, adj, est });
+    }
+
+    const short = [];
+    for (const c of CATS) {
+      buckets[c.key].sort(sorters[inputs.sortMode]);
+      const need = Math.max(0, counts[c.key] - forcedCat[c.key]);
+      const got = buckets[c.key].slice(0, need);
+      for (const g of got) items.push({ ...g, cat: c.key });
+      if (got.length < need) short.push(`${c.label}: only ${got.length + forcedCat[c.key]} of the ${counts[c.key]} you asked for match your preferences`);
+    }
+    const sf = $("shortfall");
+    sf.hidden = !short.length;
+    sf.innerHTML = short.length
+      ? "<strong>Not enough schools:</strong> " + short.map(escapeHtml).join("; ") + ". Try relaxing your preferences (state, size, price, graduation rate) or lowering that category's count."
+      : "";
+    renderAll(true);
+  }
+
+  form.addEventListener("submit", (e) => { e.preventDefault(); build(); });
+  $("m-independent").addEventListener("change", () => { if (items.length) renderAll(false); });
+
+  $("list-area").addEventListener("change", (e) => {
+    const id = Number(e.target.dataset.id);
+    const it = items.find((i) => i.school.id === id);
+    if (!it) return;
+    if (e.target.classList.contains("adj-round")) it.adj.round = e.target.value;
+    else if (e.target.classList.contains("adj-legacy")) it.adj.legacy = e.target.value;
+    else return;
+    if (forced.has(id)) { forced.set(id, { ...it.adj }); renderChips(); }
+    recompute();
+    renderAll(false);
+  });
   $("list-area").addEventListener("click", (e) => {
     if (!e.target.classList.contains("add-mini")) return;
     const id = Number(e.target.dataset.id);
@@ -345,7 +437,7 @@
     else { addToTracker(school); e.target.classList.add("added"); e.target.textContent = "✓ In Tracker"; }
   });
   $("add-all-btn").addEventListener("click", () => {
-    for (const i of currentPicks) addToTracker(i.school);
+    for (const i of items) addToTracker(i.school);
     document.querySelectorAll("#list-area .add-mini").forEach((b) => { b.classList.add("added"); b.textContent = "✓ In Tracker"; });
     $("add-all-btn").textContent = "Added to My Tracker";
   });
