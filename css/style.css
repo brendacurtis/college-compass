@@ -723,6 +723,26 @@ table.tracker-table textarea { min-height: 36px; resize: vertical; }
 .diversity-card .breakdown-line .grp { color: var(--muted); }
 .diversity-card .breakdown-line .met { color: var(--green); font-weight: 700; }
 
+/* Build My List */
+.form-subhead { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 6px 0 10px; }
+.sum-line { font-size: 0.85rem; margin: -4px 0 14px; }
+.sum-line.ok { color: var(--green); }
+.sum-line.bad { color: var(--red); font-weight: 700; }
+details.prefs { border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; }
+details.prefs summary { cursor: pointer; font-weight: 600; color: var(--navy); font-size: 0.9rem; }
+details.prefs[open] summary { margin-bottom: 14px; }
+.chance-header.high { background: #8a6414; }
+.builder-section { margin: 22px 0; }
+.builder-section .chance-header { margin-bottom: 12px; }
+.muted-line { color: var(--muted); }
+.section-h { color: var(--navy); font-size: 1.15rem; margin: 34px 0 8px; }
+.matrix-table td, .matrix-table th { text-align: center; }
+.matrix-table td:first-child, .matrix-table th:first-child { text-align: left; }
+.matrix-table td.dim { color: var(--muted); }
+.matrix-note { color: var(--muted); font-size: 0.82rem; margin: 10px 0 30px; max-width: 720px; }
+.results-bar .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+@media print { .chances-form, .results-bar .actions, #m-independent, .add-mini { display: none !important; } }
+
 @media print {
   .site-header, .site-footer, .hero-actions, .filters, #load-more, .tracker-toolbar .actions, .remove-btn { display: none !important; }
   body { background: #fff; }

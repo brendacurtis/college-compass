@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>About This Data — College Compass</title>
-<link rel="stylesheet" href="css/style.css?v=3">
+<link rel="stylesheet" href="css/style.css?v=4">
 </head>
 <body>
 
@@ -13,6 +13,7 @@
     <a href="index.html" class="brand"><span class="mark">CC</span> College Compass</a>
     <nav class="main-nav">
       <a href="index.html">Search Schools</a>
+      <a href="build-list.html">Build My List</a>
       <a href="chances.html">Find My Schools</a>
       <a href="diversity.html">Diversity Search</a>
       <a href="tracker.html">My Tracker</a>
@@ -59,6 +60,19 @@
   </div>
 
   <div class="panel" style="margin:20px 0;">
+    <h2>Build My List: how the categories and odds work</h2>
+    <p>The <a href="build-list.html">Build My List</a> page estimates your chance at each school and sorts schools into four categories using these cutoffs (they don't overlap, so every school lands in exactly one):</p>
+    <ul style="padding-left:20px; margin:10px 0;">
+      <li><strong>Reach:</strong> estimated chance under 15%, or the school admits under 15% of all applicants.</li>
+      <li><strong>High Target:</strong> estimated chance 15% to 39%.</li>
+      <li><strong>Target (Match):</strong> estimated chance 40% to 74%, or higher at a school that admits fewer than half of applicants.</li>
+      <li><strong>Safety:</strong> estimated chance 75% or more at a school that admits at least half of applicants.</li>
+    </ul>
+    <p>Each estimate starts from the school's acceptance rate, adjusts it for where your SAT (or ACT, converted with the official concordance) falls in the school's 25th-75th percentile range of admitted students, and applies a modest multiplier for GPA (about 1.25x at 3.9+, 1.0x at 3.5-3.69, 0.7x at 3.0-3.29, lower below that). Schools under a 25% acceptance rate are capped at twice their acceptance rate, since stats alone can't make an elite school likely. The GPA multiplier and the score sensitivity are judgment calls, not fitted to real admissions outcomes, and College Scorecard has no GPA or course-rigor data, so treat the estimates as rough.</p>
+    <p>Within each category, the list favors the schools where you have the <em>highest</em> chance by default; you can switch to highest graduation rate or lowest net price under Optional preferences. The <strong>at least n acceptances</strong> matrix uses those estimates. By default it allows for the fact that schools judge the same application, so results tend to move together (a strong year helps everywhere, a weak one hurts everywhere); that lowers the chance of at least one acceptance and raises the chance of several or none compared with treating each school as a separate coin flip.</p>
+  </div>
+
+  <div class="panel" style="margin:20px 0;">
     <h2>Diversity Search &amp; the Diversity Index</h2>
     <p>The <a href="diversity.html">Diversity Search</a> page lets you set a minimum undergraduate percentage for any race/ethnicity group College Scorecard reports — Black, Hispanic/Latino, Asian, White, American Indian/Alaska Native, Native Hawaiian/Pacific Islander, Two or More Races, and International students — and see only schools that meet every threshold you set. "Match National Averages" pre-fills the Black, Hispanic/Latino, Asian, and Two or More Races fields using recent national undergraduate averages (roughly 11%, 19%, 6%, and 4%) as a floor; you can adjust any of them from there.</p>
     <p>Each school also shows a <strong>Diversity Index</strong> (technically, Simpson's Diversity Index): the probability that two students picked at random from the school are from different race/ethnicity groups. It's a useful single-number way to sort by "how mixed is the student body," but it rewards an even spread across many groups specifically — it does not directly measure representation of any one underrepresented group. A school that's 75% one group and small slices of several others can score <em>lower</em> on this index than a school with no dominant majority, even if the first school serves an important access role for that group (this is common at HBCUs, for instance). If a specific group's representation is what matters to your family, use the % filters above rather than relying on the index alone.</p>
@@ -82,6 +96,6 @@
   </div>
 </footer>
 
-<script src="js/app.js?v=3"></script>
+<script src="js/app.js?v=4"></script>
 </body>
 </html>

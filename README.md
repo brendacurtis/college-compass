@@ -9,6 +9,7 @@ This is a **static site**: plain HTML/CSS/JavaScript with pre-built data files. 
 ```
 site/
   index.html        Search & filter homepage
+  build-list.html        Build My List: GPA/test score + counts per category -> balanced list and odds matrix
   chances.html        Reach/Match/Safety school finder (SAT or ACT score input)
   diversity.html        Diversity Search — min % by race/ethnicity group, Diversity Index sort
   school.html        Individual school profile page (reads ?id=<UNITID>)
@@ -17,6 +18,7 @@ site/
   css/style.css        All styling
   js/app.js         Shared helpers + tracker storage logic
   js/search.js        Homepage search/filter logic
+  js/listbuilder.js        Build My List: chance model, categories, list picker, odds matrix
   js/chances.js        Reach/Match/Safety classifier logic (incl. ACT/SAT concordance table)
   js/diversity.js        Diversity Search filter/sort logic
   js/school.js        School detail page logic
