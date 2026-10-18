@@ -1,219 +1,129 @@
 (function () {
-  // Official 2018 ACT/SAT Concordance (Table A2: ACT Composite -> SAT Total, single-point values).
-  // Source: ACT & College Board joint concordance tables.
-  const ACT_TO_SAT = {
-    36: 1590, 35: 1540, 34: 1500, 33: 1460, 32: 1430, 31: 1400, 30: 1370,
-    29: 1340, 28: 1310, 27: 1280, 26: 1240, 25: 1210, 24: 1180, 23: 1140,
-    22: 1110, 21: 1080, 20: 1040, 19: 1010, 18: 970, 17: 930, 16: 890,
-    15: 850, 14: 800, 13: 760, 12: 710, 11: 670, 10: 630, 9: 590,
-  };
-
-  function actToSat(act) {
-    if (act == null) return null;
-    const a = Math.round(Math.min(36, Math.max(9, act)));
-    return ACT_TO_SAT[a];
-  }
-
-  function satToAct(sat) {
-    if (sat == null) return null;
-    let best = 9, bestDiff = Infinity;
-    for (const [act, satVal] of Object.entries(ACT_TO_SAT)) {
-      const diff = Math.abs(satVal - sat);
-      if (diff < bestDiff) {
-        bestDiff = diff;
-        best = Number(act);
-      }
-    }
-    return best;
-  }
-
-  const form = document.getElementById("chances-form");
-  const toggleSat = document.getElementById("toggle-sat");
-  const toggleAct = document.getElementById("toggle-act");
-  const scoreLabel = document.getElementById("score-label");
-  const scoreInput = document.getElementById("score-input");
-  const gpaInput = document.getElementById("gpa-input");
-  const stateInput = document.getElementById("state-input");
-  const priceInput = document.getElementById("price-input");
-  const resultsArea = document.getElementById("results-area");
-  const noResults = document.getElementById("no-results");
+  const { actToSat, CATS, SERVICE_ACADEMY, estimate, categorize, personalize, loadResidency, fmtPctChance } = window.CC;
+  const $ = (id) => document.getElementById(id);
+  const PAGE_SIZE = 24;
 
   let testType = "sat";
-  toggleSat.addEventListener("click", () => setTestType("sat"));
-  toggleAct.addEventListener("click", () => setTestType("act"));
   function setTestType(t) {
     testType = t;
-    toggleSat.classList.toggle("active", t === "sat");
-    toggleAct.classList.toggle("active", t === "act");
+    $("toggle-sat").classList.toggle("active", t === "sat");
+    $("toggle-act").classList.toggle("active", t === "act");
+    const input = $("score-input");
     if (t === "sat") {
-      scoreLabel.textContent = "SAT Score (400–1600)";
-      scoreInput.min = 400; scoreInput.max = 1600; scoreInput.step = 10;
-      scoreInput.placeholder = "e.g. 1350";
+      $("score-label").textContent = "SAT Score (400–1600)";
+      input.min = 400; input.max = 1600; input.step = 10; input.placeholder = "e.g. 1350";
     } else {
-      scoreLabel.textContent = "ACT Score (1–36)";
-      scoreInput.min = 1; scoreInput.max = 36; scoreInput.step = 1;
-      scoreInput.placeholder = "e.g. 28";
+      $("score-label").textContent = "ACT Score (1–36)";
+      input.min = 1; input.max = 36; input.step = 1; input.placeholder = "e.g. 28";
     }
-    scoreInput.value = "";
+    input.value = "";
   }
+  $("toggle-sat").addEventListener("click", () => setTestType("sat"));
+  $("toggle-act").addEventListener("click", () => setTestType("act"));
 
   let schools = [];
+  let residency = {};
   (async () => {
     schools = await fetchSchools();
-    const states = [...new Set(schools.map((s) => s.state).filter(Boolean))].sort();
-    for (const st of states) {
-      const opt = document.createElement("option");
-      opt.value = st;
-      opt.textContent = st;
-      stateInput.appendChild(opt);
+    for (const st of [...new Set(schools.map((s) => s.state).filter(Boolean))].sort()) {
+      for (const id of ["state-input", "home-input"]) {
+        const o = document.createElement("option");
+        o.value = st; o.textContent = st;
+        $(id).appendChild(o);
+      }
     }
+    residency = await loadResidency();
   })();
 
-  function classify(school, score) {
-    let lo = null, hi = null, metricLabel = "";
-    if (testType === "sat") {
-      if (school.sat25 != null && school.sat75 != null) {
-        lo = school.sat25; hi = school.sat75; metricLabel = "SAT";
-      } else if (school.act25 != null && school.act75 != null) {
-        lo = actToSat(school.act25); hi = actToSat(school.act75); metricLabel = "SAT, estimated from this school's ACT range";
-      }
-    } else {
-      if (school.act25 != null && school.act75 != null) {
-        lo = school.act25; hi = school.act75; metricLabel = "ACT";
-      } else if (school.sat25 != null && school.sat75 != null) {
-        lo = satToAct(school.sat25); hi = satToAct(school.sat75); metricLabel = "ACT, estimated from this school's SAT range";
-      }
-    }
-
-    if (lo === null || hi === null) {
-      return { bucket: "unknown", reason: "No test score range reported for this school." };
-    }
-
-    if (score >= hi) {
-      return { bucket: "safety", reason: `Your ${metricLabel} score (${score}) is at or above this school's 75th percentile (${hi}).` };
-    }
-    if (score >= lo) {
-      return { bucket: "match", reason: `Your ${metricLabel} score (${score}) falls within this school's middle 50% range (${lo}–${hi}).` };
-    }
-    return { bucket: "reach", reason: `Your ${metricLabel} score (${score}) is below this school's 25th percentile (${lo}).` };
-  }
-
-  const BUCKET_LABELS = { reach: "Reach", match: "Match", safety: "Safety" };
-
-  function cardHtml(school, reason) {
-    const added = isInTracker(school.id);
+  function cardHtml(item) {
+    const s = item.school, est = item.est, rng = est.rng;
+    const added = isInTracker(s.id);
+    let fit;
+    if (est.hasTest) fit = `Your score vs. this school's middle 50%: ${rng.lo}–${rng.hi} (${rng.src})`;
+    else if (rng) fit = `Middle 50% of admitted students: ${rng.lo}–${rng.hi} (${rng.src})`;
+    else fit = "No test scores reported; rated on acceptance rate only";
     return `
-      <div class="chance-card" data-id="${school.id}">
-        <div class="name"><a href="school.html?id=${school.id}">${escapeHtml(school.name)}</a></div>
-        <div class="loc">${escapeHtml(school.city)}, ${escapeHtml(school.state)} · ${school.admit_rate !== null ? school.admit_rate + "% admit rate" : "Admit rate N/R"}</div>
-        <div class="reason">${escapeHtml(reason)}</div>
+      <div class="chance-card" data-id="${s.id}">
+        <div class="name"><a href="school.html?id=${s.id}">${escapeHtml(s.name)}</a>
+          <span class="index-pill">Est. ${fmtPctChance(est.p)}</span>${s._status ? ' <span class="badge">' + s._status + "</span>" : ""}</div>
+        <div class="loc">${escapeHtml(s.city)}, ${escapeHtml(s.state)} · ${s.admit_rate}% admit rate${s._admitNote ? " (" + s._admitNote + ")" : ""}</div>
+        <div class="reason">${escapeHtml(fit)}</div>
+        ${s._resNote ? '<div class="reason muted-line">' + escapeHtml(s._resNote) + "</div>" : ""}
         <div class="row-actions">
-          <button class="add-mini ${added ? "added" : ""}" data-id="${school.id}">${added ? "✓ In Tracker" : "+ Tracker"}</button>
+          <button class="add-mini ${added ? "added" : ""}" data-id="${s.id}">${added ? "✓ In Tracker" : "+ Tracker"}</button>
         </div>
       </div>`;
   }
 
-  function lowAcceptCardHtml(school, bucket, reason) {
-    const added = isInTracker(school.id);
-    const bucketNote = bucket && bucket !== "unknown"
-      ? `Academically for your score: <strong>${BUCKET_LABELS[bucket]}</strong> — ${reason}`
-      : "No test score range reported for this school.";
-    return `
-      <div class="chance-card" data-id="${school.id}">
-        <div class="name"><a href="school.html?id=${school.id}">${escapeHtml(school.name)}</a></div>
-        <div class="loc">${escapeHtml(school.city)}, ${escapeHtml(school.state)} · ${school.admit_rate}% admit rate</div>
-        <div class="reason">${bucketNote}</div>
-        <div class="row-actions">
-          <button class="add-mini ${added ? "added" : ""}" data-id="${school.id}">${added ? "✓ In Tracker" : "+ Tracker"}</button>
-        </div>
-      </div>`;
-  }
-
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const score = Number(scoreInput.value);
-    if (!score) return;
-
-    let pool = schools;
-    if (stateInput.value) pool = pool.filter((s) => s.state === stateInput.value);
-    if (priceInput.value) {
-      const max = Number(priceInput.value);
-      pool = pool.filter((s) => s.net_price !== null && s.net_price <= max);
-    }
-
-    const buckets = { reach: [], match: [], safety: [], unknown: [] };
-    for (const school of pool) {
-      const result = classify(school, score);
-      buckets[result.bucket].push({ school, reason: result.reason });
-    }
-
-    for (const key of ["reach", "match", "safety"]) {
-      buckets[key].sort((a, b) => a.school.name.localeCompare(b.school.name));
-      document.getElementById(`${key}-count`).textContent = buckets[key].length;
-      const listEl = document.getElementById(`${key}-list`);
-      renderPaged(listEl, buckets[key], (r) => cardHtml(r.school, r.reason), "No schools in this category with the current filters.");
-    }
-
-    const note = document.getElementById("unclassified-note");
-    note.textContent = buckets.unknown.length
-      ? `${buckets.unknown.length} school${buckets.unknown.length === 1 ? "" : "s"} matching your filters had no test score data and couldn't be placed in Reach, Match, or Safety.`
-      : "";
-
-    const lowAccept = pool
-      .filter((s) => s.admit_rate !== null && s.admit_rate < 15)
-      .map((s) => ({ school: s, ...classify(s, score) }))
-      .sort((a, b) => a.school.admit_rate - b.school.admit_rate);
-    document.getElementById("lowaccept-count").textContent = lowAccept.length;
-    const lowAcceptList = document.getElementById("lowaccept-list");
-    renderPaged(lowAcceptList, lowAccept, (r) => lowAcceptCardHtml(r.school, r.bucket, r.reason), "No schools under 15% acceptance with the current filters.");
-
-    resultsArea.hidden = false;
-    noResults.hidden = true;
-  });
-
-  const PAGE_SIZE = 24;
-  function renderPaged(container, items, cardFn, emptyMsg) {
-    container._items = items;
-    container._cardFn = cardFn;
-    container._emptyMsg = emptyMsg;
-    container._visible = PAGE_SIZE;
-    drawPaged(container);
-  }
-  function drawPaged(container) {
-    const { _items: items, _cardFn: cardFn, _emptyMsg: emptyMsg, _visible: visible } = container;
+  function renderPaged(container) {
+    const { _items: items, _visible: visible } = container;
     if (!items.length) {
-      container.innerHTML = `<div class="chance-column-empty">${emptyMsg}</div>`;
+      container.innerHTML = '<div class="chance-column-empty">No schools in this category with the current filters.</div>';
       return;
     }
-    let html = items.slice(0, visible).map(cardFn).join("");
+    let html = items.slice(0, visible).map(cardHtml).join("");
     if (visible < items.length) {
       html += `<button type="button" class="chance-show-more">Show ${Math.min(PAGE_SIZE, items.length - visible)} more (${items.length - visible} left)</button>`;
     }
     container.innerHTML = html;
   }
 
-  resultsArea.addEventListener("click", (e) => {
-    if (e.target.classList.contains("chance-show-more")) {
-      const container = e.target.closest(".chance-list");
-      if (container) {
-        container._visible += PAGE_SIZE;
-        drawPaged(container);
-      }
+  $("chances-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const raw = Number($("score-input").value);
+    if (!raw) return;
+    const sat = testType === "act" ? actToSat(raw) : raw;
+    const gpa = $("gpa-input").value === "" ? null : Number($("gpa-input").value);
+    const home = $("home-input").value;
+
+    let pool = schools.filter((s) => s.control !== "Private for-profit" && !SERVICE_ACADEMY.test(s.name));
+    if ($("state-input").value) pool = pool.filter((s) => s.state === $("state-input").value);
+    pool = pool.map((s) => personalize(s, home, residency));
+    if ($("price-input").value) {
+      const max = Number($("price-input").value);
+      pool = pool.filter((s) => s.net_price !== null && s.net_price <= max);
+    }
+
+    const buckets = { reach: [], high: [], target: [], safety: [] };
+    let unrated = 0;
+    for (const s of pool) {
+      const est = estimate(s, sat, gpa);
+      if (!est) { unrated++; continue; }
+      buckets[categorize(s, est)].push({ school: s, est });
+    }
+
+    $("board").innerHTML = CATS.map((c) => `
+      <div class="chance-column ${c.key}-col">
+        <div class="chance-header ${c.cls}"><span class="count">${buckets[c.key].length}</span><span>${c.label}</span><span class="desc">${c.desc}</span></div>
+        <div id="list-${c.key}" class="chance-list"></div>
+      </div>`).join("");
+    for (const c of CATS) {
+      const list = $("list-" + c.key);
+      list._items = buckets[c.key].sort((a, b) => (b.est.rng ? 1 : 0) - (a.est.rng ? 1 : 0) || b.est.p - a.est.p || a.school.name.localeCompare(b.school.name));
+      list._visible = PAGE_SIZE;
+      renderPaged(list);
+    }
+    $("unclassified-note").textContent = unrated
+      ? `${unrated.toLocaleString()} school${unrated === 1 ? "" : "s"} matching your filters report no acceptance rate and couldn't be rated.`
+      : "";
+    $("results-area").hidden = false;
+    $("no-results").hidden = true;
+  });
+
+  $("results-area").addEventListener("click", (e) => {
+    const t = e.target;
+    if (t.classList.contains("chance-show-more")) {
+      const list = t.closest(".chance-list");
+      list._visible += PAGE_SIZE;
+      renderPaged(list);
       return;
     }
-    if (e.target.classList.contains("add-mini")) {
-      const id = Number(e.target.dataset.id);
+    if (t.classList.contains("add-mini")) {
+      const id = Number(t.dataset.id);
       const school = schools.find((s) => s.id === id);
       if (!school) return;
-      if (isInTracker(id)) {
-        removeFromTracker(id);
-        e.target.classList.remove("added");
-        e.target.textContent = "+ Tracker";
-      } else {
-        addToTracker(school);
-        e.target.classList.add("added");
-        e.target.textContent = "✓ In Tracker";
-      }
+      if (isInTracker(id)) { removeFromTracker(id); t.classList.remove("added"); t.textContent = "+ Tracker"; }
+      else { addToTracker(school); t.classList.add("added"); t.textContent = "✓ In Tracker"; }
     }
   });
 })();

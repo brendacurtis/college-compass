@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reach, Match &amp; Safety Schools — College Compass</title>
-<meta name="description" content="Enter your child's SAT or ACT score and see which colleges are likely reach, match, or safety schools based on real admissions data.">
-<link rel="stylesheet" href="css/style.css?v=ade51072">
+<title>Find My Schools — College Compass</title>
+<meta name="description" content="Enter your SAT or ACT score (and GPA) and browse every four-year college sorted into reach, high target, target, and safety schools.">
+<link rel="stylesheet" href="css/style.css?v=ad33ddc7">
 </head>
 <body>
 
@@ -25,8 +25,8 @@
 </header>
 
 <div class="wrap page-title-bar">
-  <h1>Find Reach, Match &amp; Safety Schools</h1>
-  <p>Enter your child's test score to sort schools into three groups based on how their score compares to each school's recent admitted class. Schools with acceptance rates under 15% are broken out separately below, since those are highly competitive for every applicant regardless of test scores.</p>
+  <h1>Find My Schools</h1>
+  <p>Enter your test score (and GPA, if you like) to browse every four-year college sorted into reach, high target, target, and safety schools. These are the same categories and estimates used on <a href="build-list.html">Build My List</a>, which picks a balanced list for you and adds legacy and early-round options.</p>
 </div>
 
 <div class="wrap">
@@ -45,60 +45,30 @@
       </div>
       <div class="form-field">
         <label>Unweighted GPA (optional)</label>
-        <input type="number" id="gpa-input" min="0" max="5" step="0.01" placeholder="e.g. 3.7">
+        <input type="number" id="gpa-input" min="0" max="4" step="0.01" placeholder="e.g. 3.7">
       </div>
       <div class="form-field">
-        <label>State (optional)</label>
+        <label>Home state (optional)</label>
+        <select id="home-input"><option value="">Not specified</option></select>
+      </div>
+      <div class="form-field">
+        <label>School state (optional)</label>
         <select id="state-input"><option value="">Any state</option></select>
       </div>
       <div class="form-field">
-        <label>Max Net Price (optional)</label>
+        <label>Max net price (optional)</label>
         <input type="number" id="price-input" min="0" step="1000" placeholder="e.g. 35000">
       </div>
     </div>
     <div class="chances-note">
-      <strong>A note on GPA:</strong> the federal College Scorecard dataset this site runs on doesn't publish admitted students' GPA, class rank, or course rigor — only standardized test scores and acceptance rates. So Reach/Match/Safety below is based on test scores only. Your GPA is shown for your own reference; weigh it (and course rigor) as important context the algorithm can't see.
+      <strong>How to read this:</strong> each school's chance is a rough estimate from its acceptance rate, adjusted for where your score falls in its admitted-student range and for your GPA (if you enter one). Leave GPA blank and it's treated as average. College Scorecard has no GPA, rigor, essay, or activity data, so these are not predictions. Enter a home state to adjust a few public universities for in-state vs. out-of-state admission and cost. For-profit schools and the U.S. service academies are left out.
     </div>
     <button type="submit" id="find-schools-btn">Find My Schools</button>
   </form>
 
   <div id="results-area" hidden>
-    <div class="chances-board">
-      <div class="chance-column reach-col">
-        <div class="chance-header reach">
-          <span class="count" id="reach-count">0</span>
-          <span>Reach Schools</span>
-          <span class="desc">Score below this school's 25th percentile</span>
-        </div>
-        <div id="reach-list" class="chance-list"></div>
-      </div>
-      <div class="chance-column match-col">
-        <div class="chance-header match">
-          <span class="count" id="match-count">0</span>
-          <span>Match Schools</span>
-          <span class="desc">Score falls within the middle 50% of admitted students</span>
-        </div>
-        <div id="match-list" class="chance-list"></div>
-      </div>
-      <div class="chance-column safety-col">
-        <div class="chance-header safety">
-          <span class="count" id="safety-count">0</span>
-          <span>Safety Schools</span>
-          <span class="desc">Score at or above this school's 75th percentile</span>
-        </div>
-        <div id="safety-list" class="chance-list"></div>
-      </div>
-    </div>
+    <div class="chances-board" id="board"></div>
     <p class="unclassified-note" id="unclassified-note"></p>
-
-    <div class="lowaccept-section">
-      <div class="chance-header lowaccept">
-        <span class="count" id="lowaccept-count">0</span>
-        <span>Low Acceptance Rate Schools</span>
-        <span class="desc">Acceptance rate under 15% — highly competitive for every applicant, no matter how strong the test scores. Worth a look regardless of which category above your child's score falls into.</span>
-      </div>
-      <div class="card-grid chance-list" id="lowaccept-list"></div>
-    </div>
   </div>
 
   <div id="no-results" class="empty-state">Enter a test score above and click "Find My Schools" to get started.</div>
@@ -112,6 +82,7 @@
 </footer>
 
 <script src="js/app.js?v=e334acfa"></script>
-<script src="js/chances.js?v=980bc934"></script>
+<script src="js/model.js?v=d8873b17"></script>
+<script src="js/chances.js?v=2400f29f"></script>
 </body>
 </html>
