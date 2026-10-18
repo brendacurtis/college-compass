@@ -220,14 +220,40 @@
   applyDefaults();
 
   let schools = [];
+  let residency = {};
   (async () => {
     schools = await fetchSchools();
     for (const st of [...new Set(schools.map((s) => s.state).filter(Boolean))].sort()) {
-      const o = document.createElement("option");
-      o.value = st; o.textContent = st;
-      $("p-state").appendChild(o);
+      for (const id of ["p-state", "home-state"]) {
+        const o = document.createElement("option");
+        o.value = st; o.textContent = st;
+        $(id).appendChild(o);
+      }
     }
+    try { residency = await (await fetch("data/residency.json")).json(); } catch (e) { residency = {}; }
   })();
+
+  // Adjust a school for the student's home state: in-state vs out-of-state admit rate (only where published
+  // figures show a large gap), and an out-of-state price estimate at public schools.
+  function personalize(s, home) {
+    if (!home) return s;
+    const inState = s.state === home;
+    const r = residency[s.id];
+    const out = { ...s };
+    if (s.control === "Public") out._status = inState ? "In-state" : "Out-of-state";
+    if (r && r.apply) {
+      out.admit_rate = inState ? r.in : r.out;
+      out._admitNote = (inState ? "in-state" : "out-of-state") + " rate" + (r.estimate ? ", estimated" : "");
+      out._status = out._status || (inState ? "In-state" : "Out-of-state");
+    } else if (r) {
+      out._resNote = "No clear in-state advantage found here (" + r.cycle + ")";
+    }
+    if (s.control === "Public" && !inState && s.net_price !== null && s.tuition_in != null && s.tuition_out != null) {
+      out.net_price = s.net_price + Math.max(0, s.tuition_out - s.tuition_in);
+      out._priceNote = true;
+    }
+    return out;
+  }
 
   /* ---- must-have schools (legacy / early settings set before building) ---- */
   const forced = new Map(); // id -> { legacy, round }
@@ -316,10 +342,10 @@
       <div class="chance-card" data-id="${s.id}">
         <button type="button" class="remove-mini" data-id="${s.id}" title="Remove from my list (the next best school takes its place)" aria-label="Remove ${escapeHtml(s.name)}">&times;</button>
         <div class="name"><a href="school.html?id=${s.id}">${escapeHtml(s.name)}</a>
-          <span class="index-pill">Est. ${fmtPctChance(est.p)}</span>${note}</div>
+          <span class="index-pill">Est. ${fmtPctChance(est.p)}</span>${note}${s._status ? ' <span class="badge">' + s._status + "</span>" : ""}</div>
         <div class="loc">${escapeHtml(s.city)}, ${escapeHtml(s.state)} · ${escapeHtml(s.control || "")} · ${s.size !== null ? Number(s.size).toLocaleString() + " undergrads" : "size N/R"}</div>
-        <div class="reason">${s.admit_rate}% admit rate · ${s.grad_rate !== null ? s.grad_rate + "% graduate in 6 yrs" : "grad rate N/R"}${s.net_price !== null ? " · avg net price $" + Number(s.net_price).toLocaleString() : ""}</div>
-        <div class="reason muted-line">${escapeHtml(fit)}</div>
+        <div class="reason">${s.admit_rate}% admit rate${s._admitNote ? " (" + s._admitNote + ")" : ""} · ${s.grad_rate !== null ? s.grad_rate + "% graduate in 6 yrs" : "grad rate N/R"}${s.net_price !== null ? " · " + (s._priceNote ? "est. net price for you $" : "avg net price $") + Number(s.net_price).toLocaleString() : ""}</div>
+        <div class="reason muted-line">${escapeHtml(fit)}</div>${s._resNote ? '<div class="reason muted-line">' + escapeHtml(s._resNote) + "</div>" : ""}
         <div class="adj-row">
           <label>Round <select class="adj-round" data-id="${s.id}">${optHtml(ROUND_OPTS, item.adj.round)}</select></label>
           <label>Legacy <select class="adj-legacy" data-id="${s.id}">${optHtml(LEGACY_OPTS, item.adj.legacy)}</select></label>
@@ -334,7 +360,7 @@
     const s = c.school;
     return `<div class="chance-card other-card" data-id="${s.id}">
         <div class="name"><a href="school.html?id=${s.id}">${escapeHtml(s.name)}</a> <span class="index-pill">Est. ${fmtPctChance(c.est.p)}</span></div>
-        <div class="loc">${escapeHtml(s.city)}, ${escapeHtml(s.state)} · ${s.admit_rate}% admit rate${s.grad_rate !== null ? " · " + s.grad_rate + "% grad rate" : ""}</div>
+        <div class="loc">${escapeHtml(s.city)}, ${escapeHtml(s.state)} · ${s.admit_rate}% admit rate${s._admitNote ? " (" + s._admitNote + ")" : ""}${s.grad_rate !== null ? " · " + s.grad_rate + "% grad rate" : ""}</div>
         <div class="row-actions"><button type="button" class="add-other" data-id="${s.id}" data-cat="${catKey}">+ Add to my list</button></div>
       </div>`;
   }
@@ -436,11 +462,14 @@
     const minSize = Number($("p-minsize").value) || 0;
     const allowNoTest = $("p-notest").checked;
 
+    const home = $("home-state").value;
+    const pool = schools.map((s) => personalize(s, home));
+
     // Must-have schools go in first, in whatever category their adjusted chance lands them.
     items = [];
     const forcedCat = { reach: 0, high: 0, target: 0, safety: 0 };
     for (const [id, adj] of forced) {
-      const s = schools.find((x) => x.id === id);
+      const s = pool.find((x) => x.id === id);
       const est = estimate(s, sat, gpa, adj);
       if (!est) continue;
       const cat = categorize(s, est);
@@ -449,7 +478,7 @@
     }
 
     const buckets = { reach: [], high: [], target: [], safety: [] };
-    for (const s of schools) {
+    for (const s of pool) {
       if (listMode === "check") break;
       if (forced.has(s.id)) continue;
       if (s.control === "Private for-profit") continue;

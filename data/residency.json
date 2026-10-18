@@ -1,0 +1,101 @@
+{
+ "234076": {
+  "name": "University of Virginia-Main Campus",
+  "in": 23.0,
+  "out": 12.5,
+  "apply": true,
+  "estimate": false,
+  "cycle": "Class of 2029",
+  "note": "Cavalier Daily reporting on UVA's admissions release"
+ },
+ "199120": {
+  "name": "University of North Carolina at Chapel Hill",
+  "in": 37.0,
+  "out": 9.6,
+  "apply": true,
+  "estimate": false,
+  "cycle": "Class of 2029",
+  "note": "Consultant summaries of UNC data; state law caps out-of-state first-years at 18%"
+ },
+ "170976": {
+  "name": "University of Michigan-Ann Arbor",
+  "in": 39.0,
+  "out": 15.0,
+  "apply": true,
+  "estimate": true,
+  "cycle": "2025",
+  "note": "Michigan publishes one overall rate; residency figures are third-party estimates (out-of-state roughly 12-18%)"
+ },
+ "139755": {
+  "name": "Georgia Institute of Technology-Main Campus",
+  "in": 28.0,
+  "out": 9.0,
+  "apply": true,
+  "estimate": false,
+  "cycle": "Class of 2030 release",
+  "note": "Out-of-state figure includes international applicants, so it may understate domestic out-of-state odds"
+ },
+ "134130": {
+  "name": "University of Florida",
+  "in": 38.0,
+  "out": 14.0,
+  "apply": true,
+  "estimate": true,
+  "cycle": "2025",
+  "note": "UF publishes no residency split; third-party estimates (in-state about 35-50%, out-of-state about 12-20%)"
+ },
+ "228778": {
+  "name": "The University of Texas at Austin",
+  "in": 35.9,
+  "out": 7.5,
+  "apply": true,
+  "estimate": false,
+  "cycle": "Fall 2025",
+  "note": "From UT Austin's Common Data Set as summarized by consultants; Texas also has automatic admission for top students"
+ },
+ "231624": {
+  "name": "William & Mary",
+  "in": 37.0,
+  "out": 37.0,
+  "apply": false,
+  "estimate": false,
+  "cycle": "Class of 2029",
+  "note": "Same admit rate for in-state and out-of-state in the Class of 2029"
+ },
+ "163286": {
+  "name": "University of Maryland-College Park",
+  "in": 41.0,
+  "out": 47.0,
+  "apply": false,
+  "estimate": false,
+  "cycle": "Class of 2029",
+  "note": "Admit rates for in-state and out-of-state applicants are close"
+ },
+ "186380": {
+  "name": "Rutgers University-New Brunswick",
+  "in": 62.3,
+  "out": 72.0,
+  "apply": false,
+  "estimate": false,
+  "cycle": "Class of 2027",
+  "note": "New Jersey residents were admitted at a lower rate than out-of-state applicants"
+ },
+ "186131": {
+  "name": "Princeton University",
+  "in": 5.1,
+  "out": 5.5,
+  "apply": false,
+  "estimate": false,
+  "cycle": "Class of 2028",
+  "note": "Princeton does not consider state residency; rates are about the same"
+ },
+ "233921": {
+  "name": "Virginia Polytechnic Institute and State University",
+  "in": 47.3,
+  "out": 58.7,
+  "apply": false,
+  "estimate": false,
+  "cycle": "Fall 2025",
+  "note": "Out-of-state admit rate is higher, partly because fewer out-of-state admits enroll"
+ }
+}
