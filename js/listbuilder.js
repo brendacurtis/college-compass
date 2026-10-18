@@ -214,7 +214,7 @@
     const q = $("forced-search").value.trim().toLowerCase();
     if (!q) { $("forced-results").innerHTML = ""; return; }
     const matches = schools
-      .filter((s) => s.admit_rate !== null && !SERVICE_ACADEMY.test(s.name) && `${s.name} ${s.city} ${s.state}`.toLowerCase().includes(q))
+      .filter((s) => s.admit_rate !== null && s.control !== "Private for-profit" && !SERVICE_ACADEMY.test(s.name) && `${s.name} ${s.city} ${s.state}`.toLowerCase().includes(q))
       .sort((a, b) => (b.name.toLowerCase().startsWith(q) ? 1 : 0) - (a.name.toLowerCase().startsWith(q) ? 1 : 0) || a.name.length - b.name.length)
       .slice(0, 8);
     $("forced-results").innerHTML = matches.length
@@ -258,6 +258,11 @@
   let items = [];     // { school, adj, est, cat }
   let inputs = null;  // { sat, gpa, sortMode }
   let requestedCounts = { reach: 0, high: 0, target: 0, safety: 0 };
+  let candidates = { reach: [], high: [], target: [], safety: [] }; // every eligible school, ranked
+  let removedItems = [];
+  const OTHERS_SHOWN = 6;
+  const onList = (id) => items.some((i) => i.school.id === id);
+  const isRemoved = (id) => removedItems.some((i) => i.school.id === id);
 
   const fmtPctChance = (p) => (p < 0.005 ? "<1%" : p > 0.995 ? ">99%" : Math.round(p * 100) + "%");
   const sorters = {
@@ -284,6 +289,7 @@
     const note = est.boosted ? ' <span class="badge gold">boosted</span>' : "";
     return `
       <div class="chance-card" data-id="${s.id}">
+        <button type="button" class="remove-mini" data-id="${s.id}" title="Remove from my list (the next best school takes its place)" aria-label="Remove ${escapeHtml(s.name)}">&times;</button>
         <div class="name"><a href="school.html?id=${s.id}">${escapeHtml(s.name)}</a>
           <span class="index-pill">Est. ${fmtPctChance(est.p)}</span>${note}</div>
         <div class="loc">${escapeHtml(s.city)}, ${escapeHtml(s.state)} · ${escapeHtml(s.control || "")} · ${s.size !== null ? Number(s.size).toLocaleString() + " undergrads" : "size N/R"}</div>
@@ -296,6 +302,15 @@
         <div class="row-actions">
           <button class="add-mini ${added ? "added" : ""}" data-id="${s.id}">${added ? "✓ In Tracker" : "+ Tracker"}</button>
         </div>
+      </div>`;
+  }
+
+  function otherCardHtml(c, catKey) {
+    const s = c.school;
+    return `<div class="chance-card other-card" data-id="${s.id}">
+        <div class="name"><a href="school.html?id=${s.id}">${escapeHtml(s.name)}</a> <span class="index-pill">Est. ${fmtPctChance(c.est.p)}</span></div>
+        <div class="loc">${escapeHtml(s.city)}, ${escapeHtml(s.state)} · ${s.admit_rate}% admit rate${s.grad_rate !== null ? " · " + s.grad_rate + "% grad rate" : ""}</div>
+        <div class="row-actions"><button type="button" class="add-other" data-id="${s.id}" data-cat="${catKey}">+ Add to my list</button></div>
       </div>`;
   }
 
@@ -318,12 +333,18 @@
     for (const c of CATS) {
       const list = byCat[c.key];
       if (!list.length && !requestedCounts[c.key]) continue;
+      const others = candidates[c.key].filter((x) => !onList(x.school.id) && !isRemoved(x.school.id)).slice(0, OTHERS_SHOWN);
       html += `<div class="builder-section">
         <div class="chance-header ${c.cls}"><span class="count">${list.length}</span><span>${c.label}</span><span class="desc">${c.desc}</span></div>
         <div class="card-grid">${list.length ? list.map(cardHtml).join("") : '<div class="chance-column-empty">No matching schools.</div>'}</div>
+        ${others.length ? `<div class="others-label">Next best ${c.label} options. Remove a school above and the first one below takes its place, or add one yourself.</div>
+        <div class="card-grid">${others.map((o) => otherCardHtml(o, c.key)).join("")}</div>` : ""}
       </div>`;
     }
     $("list-area").innerHTML = html;
+    $("removed-area").innerHTML = removedItems.length
+      ? "<strong>Removed:</strong> " + removedItems.map((i) => `${escapeHtml(i.school.name)} <button type="button" class="restore-btn" data-id="${i.school.id}">Restore</button>`).join(" · ")
+      : "";
     renderMatrix(byCat, realistic);
     $("results").hidden = false;
     if (scroll) $("results").scrollIntoView({ behavior: "smooth", block: "start" });
@@ -399,8 +420,10 @@
     }
 
     const short = [];
+    removedItems = [];
     for (const c of CATS) {
       buckets[c.key].sort(sorters[inputs.sortMode]);
+      candidates[c.key] = buckets[c.key];
       const need = Math.max(0, counts[c.key] - forcedCat[c.key]);
       const got = buckets[c.key].slice(0, need);
       for (const g of got) items.push({ ...g, cat: c.key });
@@ -428,13 +451,40 @@
     recompute();
     renderAll(false);
   });
+  function removeSchool(id) {
+    const idx = items.findIndex((i) => i.school.id === id);
+    if (idx < 0) return;
+    const [it] = items.splice(idx, 1);
+    removedItems.push(it);
+    if (forced.has(id)) { forced.delete(id); renderChips(); }
+    const next = candidates[it.cat].find((c) => !onList(c.school.id) && !isRemoved(c.school.id));
+    if (next) items.push({ ...next, cat: it.cat });
+    renderAll(false);
+  }
   $("list-area").addEventListener("click", (e) => {
+    const t = e.target;
+    if (t.classList.contains("remove-mini")) { removeSchool(Number(t.dataset.id)); return; }
+    if (t.classList.contains("add-other")) {
+      const id = Number(t.dataset.id);
+      const c = candidates[t.dataset.cat].find((x) => x.school.id === id);
+      if (c && !onList(id)) { items.push({ ...c, cat: t.dataset.cat }); renderAll(false); }
+      return;
+    }
     if (!e.target.classList.contains("add-mini")) return;
     const id = Number(e.target.dataset.id);
     const school = schools.find((s) => s.id === id);
     if (!school) return;
     if (isInTracker(id)) { removeFromTracker(id); e.target.classList.remove("added"); e.target.textContent = "+ Tracker"; }
     else { addToTracker(school); e.target.classList.add("added"); e.target.textContent = "✓ In Tracker"; }
+  });
+  $("removed-area").addEventListener("click", (e) => {
+    if (!e.target.classList.contains("restore-btn")) return;
+    const id = Number(e.target.dataset.id);
+    const idx = removedItems.findIndex((i) => i.school.id === id);
+    if (idx < 0) return;
+    const [it] = removedItems.splice(idx, 1);
+    items.push(it);
+    renderAll(false);
   });
   $("add-all-btn").addEventListener("click", () => {
     for (const i of items) addToTracker(i.school);
