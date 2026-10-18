@@ -230,6 +230,7 @@
     chance: (a, b) => b.est.p - a.est.p || (b.school.grad_rate ?? -1) - (a.school.grad_rate ?? -1),
     selective: (a, b) => (a.school.admit_rate ?? 101) - (b.school.admit_rate ?? 101) || b.est.p - a.est.p,
     lessselective: (a, b) => (b.school.admit_rate ?? -1) - (a.school.admit_rate ?? -1) || b.est.p - a.est.p,
+    closest: (a, b) => (a.school._miles ?? 1e9) - (b.school._miles ?? 1e9) || b.est.p - a.est.p,
     grad: (a, b) => (b.school.grad_rate ?? -1) - (a.school.grad_rate ?? -1) || b.est.p - a.est.p,
     price: (a, b) => (a.school.net_price ?? 1e9) - (b.school.net_price ?? 1e9) || b.est.p - a.est.p,
   };
@@ -255,7 +256,7 @@
         <button type="button" class="remove-mini" data-id="${s.id}" title="Remove from my list (the next best school takes its place)" aria-label="Remove ${escapeHtml(s.name)}">&times;</button>
         <div class="name"><a href="school.html?id=${s.id}">${escapeHtml(s.name)}</a>
           <span class="index-pill">Est. ${fmtPctChance(est.p)}</span>${note}${s._status ? ' <span class="badge">' + s._status + "</span>" : ""}</div>
-        <div class="loc">${escapeHtml(s.city)}, ${escapeHtml(s.state)} · ${escapeHtml(s.control || "")} · ${s.size !== null ? Number(s.size).toLocaleString() + " undergrads" : "size N/R"}</div>
+        <div class="loc">${escapeHtml(s.city)}, ${escapeHtml(s.state)} · ${escapeHtml(s.control || "")} · ${s.size !== null ? Number(s.size).toLocaleString() + " undergrads" : "size N/R"}${s._miles != null ? " · " + Math.round(s._miles).toLocaleString() + " mi away" : ""}</div>
         <div class="reason">${s.admit_rate}% admit rate${s._admitNote ? " (" + s._admitNote + ")" : ""} · ${s.grad_rate !== null ? s.grad_rate + "% graduate in 6 yrs" : "grad rate N/R"}${s.net_price !== null ? " · " + (s._priceNote ? "est. net price for you $" : "avg net price $") + Number(s.net_price).toLocaleString() : ""}</div>
         <div class="reason muted-line">${escapeHtml(fit)}</div>${s._resNote ? '<div class="reason muted-line">' + escapeHtml(s._resNote) + "</div>" : ""}
         <div class="adj-row">
@@ -272,7 +273,7 @@
     const s = c.school;
     return `<div class="chance-card other-card" data-id="${s.id}">
         <div class="name"><a href="school.html?id=${s.id}">${escapeHtml(s.name)}</a> <span class="index-pill">Est. ${fmtPctChance(c.est.p)}</span></div>
-        <div class="loc">${escapeHtml(s.city)}, ${escapeHtml(s.state)} · ${s.admit_rate}% admit rate${s._admitNote ? " (" + s._admitNote + ")" : ""}${s.grad_rate !== null ? " · " + s.grad_rate + "% grad rate" : ""}</div>
+        <div class="loc">${escapeHtml(s.city)}, ${escapeHtml(s.state)} · ${s.admit_rate}% admit rate${s._admitNote ? " (" + s._admitNote + ")" : ""}${s.grad_rate !== null ? " · " + s.grad_rate + "% grad rate" : ""}${s._miles != null ? " · " + Math.round(s._miles).toLocaleString() + " mi away" : ""}</div>
         <div class="row-actions"><button type="button" class="add-other" data-id="${s.id}" data-cat="${catKey}">+ Add to my list</button></div>
       </div>`;
   }
@@ -346,7 +347,7 @@
       : "This treats each school as an independent coin flip, which is a little optimistic about getting at least one acceptance.";
   }
 
-  function build() {
+  async function build() {
     if (!schools.length) return;
     if (listMode === "build" && !updateSum()) { $("sum-line").scrollIntoView({ block: "center" }); return; }
     if (listMode === "check" && !forced.size) {
@@ -357,6 +358,17 @@
       $("results").hidden = false;
       return;
     }
+    // Distance: needs a valid ZIP code; the mileage limit only applies when building a list.
+    let origin = null;
+    const zip = $("p-zip").value.trim();
+    const maxMiles = listMode === "build" && $("p-miles").value ? Number($("p-miles").value) : null;
+    $("geo-msg").hidden = true;
+    if (zip || maxMiles !== null) {
+      if (!zip) { $("prefs-panel").open = true; $("geo-msg").hidden = false; $("geo-msg").textContent = "Enter your ZIP code to use the distance limit."; $("p-zip").focus(); return; }
+      await window.Geo.load();
+      origin = await window.Geo.zipPoint(zip);
+      if (!origin) { $("geo-msg").hidden = false; $("geo-msg").textContent = "We couldn't find that ZIP code. Try a nearby one."; $("p-zip").focus(); return; }
+    }
     const gpa = Number($("gpa-input").value);
     let sat = null;
     if (mode !== "none") {
@@ -366,7 +378,7 @@
     }
     const counts = listMode === "check" ? { reach: 0, high: 0, target: 0, safety: 0 } : readCounts();
     requestedCounts = { ...counts };
-    inputs = { sat, gpa, sortMode: listMode === "check" ? "chance" : $("p-sort").value };
+    inputs = { sat, gpa, sortMode: listMode === "check" ? "chance" : ($("p-sort").value === "closest" && !origin ? "chance" : $("p-sort").value) };
 
     const state = $("p-state").value, locale = $("p-locale").value, size = $("p-size").value, control = $("p-control").value;
     const maxPrice = $("p-price").value ? Number($("p-price").value) : null;
@@ -375,7 +387,7 @@
     const allowNoTest = $("p-notest").checked;
 
     const home = $("home-state").value;
-    const pool = schools.map((s) => personalize(s, home));
+    const pool = schools.map((s) => personalize(s, home)).map((s) => (origin ? { ...s, _miles: window.Geo.milesTo(origin, s.id) } : s));
 
     // Must-have schools go in first, in whatever category their adjusted chance lands them.
     items = [];
@@ -403,6 +415,7 @@
       if (maxPrice !== null && (s.net_price === null || s.net_price > maxPrice)) continue;
       if (minGrad > 0 && (s.grad_rate === null || s.grad_rate < minGrad)) continue;
       if (minSize > 0 && (s.size === null || s.size < minSize)) continue;
+      if (maxMiles !== null && (s._miles == null || s._miles > maxMiles)) continue;
       const adj = { legacy: "none", round: "rd" };
       const est = estimate(s, sat, gpa, adj);
       if (!est) continue;

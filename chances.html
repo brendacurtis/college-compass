@@ -59,6 +59,15 @@
         <label>Max net price (optional)</label>
         <input type="number" id="price-input" min="0" step="1000" placeholder="e.g. 35000">
       </div>
+      <div class="form-field">
+        <label>Your ZIP code (optional)</label>
+        <input type="text" id="zip-input" inputmode="numeric" maxlength="5" placeholder="e.g. 08540">
+        <div class="sum-line bad" id="geo-msg" hidden></div>
+      </div>
+      <div class="form-field">
+        <label>Max distance (miles, optional)</label>
+        <input type="number" id="miles-input" min="0" step="25" placeholder="e.g. 300">
+      </div>
     </div>
     <div class="chances-note">
       <strong>How to read this:</strong> each school's chance is a rough estimate from its acceptance rate, adjusted for where your score falls in its admitted-student range and for your GPA (if you enter one). Leave GPA blank and it's treated as average. College Scorecard has no GPA, rigor, essay, or activity data, so these are not predictions. Enter a home state to adjust a few public universities for in-state vs. out-of-state admission and cost. For-profit schools and the U.S. service academies are left out.
@@ -82,7 +91,8 @@
 </footer>
 
 <script src="js/app.js?v=e334acfa"></script>
+<script src="js/geo.js?v=2b84df40"></script>
 <script src="js/model.js?v=d8873b17"></script>
-<script src="js/chances.js?v=2400f29f"></script>
+<script src="js/chances.js?v=9b0c7019"></script>
 </body>
 </html>

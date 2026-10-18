@@ -46,7 +46,7 @@
       <div class="chance-card" data-id="${s.id}">
         <div class="name"><a href="school.html?id=${s.id}">${escapeHtml(s.name)}</a>
           <span class="index-pill">Est. ${fmtPctChance(est.p)}</span>${s._status ? ' <span class="badge">' + s._status + "</span>" : ""}</div>
-        <div class="loc">${escapeHtml(s.city)}, ${escapeHtml(s.state)} · ${s.admit_rate}% admit rate${s._admitNote ? " (" + s._admitNote + ")" : ""}</div>
+        <div class="loc">${escapeHtml(s.city)}, ${escapeHtml(s.state)} · ${s.admit_rate}% admit rate${s._admitNote ? " (" + s._admitNote + ")" : ""}${s._miles != null ? " · " + Math.round(s._miles).toLocaleString() + " mi away" : ""}</div>
         <div class="reason">${escapeHtml(fit)}</div>
         ${s._resNote ? '<div class="reason muted-line">' + escapeHtml(s._resNote) + "</div>" : ""}
         <div class="row-actions">
@@ -68,17 +68,31 @@
     container.innerHTML = html;
   }
 
-  $("chances-form").addEventListener("submit", (e) => {
+  $("chances-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const raw = Number($("score-input").value);
     if (!raw) return;
     const sat = testType === "act" ? actToSat(raw) : raw;
     const gpa = $("gpa-input").value === "" ? null : Number($("gpa-input").value);
     const home = $("home-input").value;
+    const zip = $("zip-input").value.trim();
+    const maxMiles = $("miles-input").value ? Number($("miles-input").value) : null;
+    let origin = null;
+    $("geo-msg").hidden = true;
+    if (zip || maxMiles !== null) {
+      if (!zip) { $("geo-msg").hidden = false; $("geo-msg").textContent = "Enter your ZIP code to use the distance limit."; $("zip-input").focus(); return; }
+      await window.Geo.load();
+      origin = await window.Geo.zipPoint(zip);
+      if (!origin) { $("geo-msg").hidden = false; $("geo-msg").textContent = "We couldn't find that ZIP code. Try a nearby one."; $("zip-input").focus(); return; }
+    }
 
     let pool = schools.filter((s) => s.control !== "Private for-profit" && !SERVICE_ACADEMY.test(s.name));
     if ($("state-input").value) pool = pool.filter((s) => s.state === $("state-input").value);
     pool = pool.map((s) => personalize(s, home, residency));
+    if (origin) {
+      pool = pool.map((s) => ({ ...s, _miles: window.Geo.milesTo(origin, s.id) }));
+      if (maxMiles !== null) pool = pool.filter((s) => s._miles != null && s._miles <= maxMiles);
+    }
     if ($("price-input").value) {
       const max = Number($("price-input").value);
       pool = pool.filter((s) => s.net_price !== null && s.net_price <= max);

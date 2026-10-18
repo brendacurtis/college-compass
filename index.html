@@ -82,6 +82,11 @@
         <option value="Rural">Rural</option>
       </select>
 
+      <h3>Distance From Home</h3>
+      <input type="text" id="f-zip" inputmode="numeric" maxlength="5" placeholder="Your ZIP code">
+      <div class="sum-line bad" id="f-zip-msg" hidden></div>
+      <input type="number" id="f-miles" min="0" step="25" placeholder="Max miles, e.g. 300" style="margin-top:8px">
+
       <h3>Max Average Net Price</h3>
       <input type="number" id="f-price" placeholder="e.g. 30000" min="0" step="1000">
 
@@ -107,6 +112,7 @@
           <option value="net_price_asc">Sort: Lowest net price first</option>
           <option value="size_desc">Sort: Largest enrollment first</option>
           <option value="grad_rate_desc">Sort: Highest grad rate first</option>
+          <option value="distance_asc">Sort: Closest to my ZIP first</option>
         </select>
       </div>
       <div class="card-grid" id="card-grid"></div>
@@ -124,6 +130,7 @@
 </footer>
 
 <script src="js/app.js?v=e334acfa"></script>
-<script src="js/search.js?v=7c5680f0"></script>
+<script src="js/geo.js?v=2b84df40"></script>
+<script src="js/search.js?v=6b6db3a0"></script>
 </body>
 </html>

@@ -10,6 +10,9 @@
   const selectivitySelect = document.getElementById("f-selectivity");
   const localeSelect = document.getElementById("f-locale");
   const priceInput = document.getElementById("f-price");
+  const zipInput = document.getElementById("f-zip");
+  const milesInput = document.getElementById("f-miles");
+  const zipMsg = document.getElementById("f-zip-msg");
   const sortSelect = document.getElementById("sort-select");
   const resetBtn = document.getElementById("reset-filters");
 
@@ -17,6 +20,7 @@
   let visibleCount = PAGE_SIZE;
   let schools = [];
   let filtered = [];
+  let origin = null;
 
   try {
     schools = await fetchSchools();
@@ -47,6 +51,7 @@
     const selectivity = selectivitySelect.value;
     const locale = localeSelect.value;
     const maxPrice = priceInput.value ? Number(priceInput.value) : null;
+    const maxMiles = milesInput.value ? Number(milesInput.value) : null;
     const tags = getCheckedValues(".f-tag");
 
     filtered = schools.filter((s) => {
@@ -60,6 +65,7 @@
       if (selectivity && s.selectivity !== selectivity) return false;
       if (locale && s.locale_bucket !== locale) return false;
       if (maxPrice !== null && (s.net_price === null || s.net_price > maxPrice)) return false;
+      if (maxMiles !== null && origin && (s._miles == null || s._miles > maxMiles)) return false;
       if (tags.length && !tags.every((t) => (s.designations || []).includes(t))) return false;
       return true;
     });
@@ -78,6 +84,9 @@
       return (a[key] - b[key]) * dir;
     };
     switch (mode) {
+      case "distance_asc":
+        filtered.sort((a, b) => (a._miles ?? 1e9) - (b._miles ?? 1e9));
+        break;
       case "admit_rate_asc":
         filtered.sort((a, b) => byNullLast(a, b, "admit_rate", 1));
         break;
@@ -113,7 +122,7 @@
     return `
       <a class="school-card" href="school.html?id=${s.id}">
         <div class="name">${escapeHtml(s.name)}</div>
-        <div class="loc">${escapeHtml(s.city)}, ${escapeHtml(s.state)} · ${escapeHtml(s.control || "")}</div>
+        <div class="loc">${escapeHtml(s.city)}, ${escapeHtml(s.state)} · ${escapeHtml(s.control || "")}${s._miles != null ? " · " + Math.round(s._miles).toLocaleString() + " mi away" : ""}</div>
         <div class="badges">${badgeHtml(s)}</div>
         <div class="metrics">
           <div class="metric"><div class="v">${s.admit_rate !== null ? s.admit_rate + "%" : "N/R"}</div><div class="l">Admit Rate</div></div>
@@ -174,10 +183,31 @@
     selectivitySelect.value = "";
     localeSelect.value = "";
     priceInput.value = "";
+    zipInput.value = "";
+    milesInput.value = "";
+    zipMsg.hidden = true;
+    origin = null;
+    for (const s of schools) s._miles = null;
     sortSelect.value = "name";
     document.querySelectorAll(".f-control, .f-tag").forEach((el) => (el.checked = false));
     applyFilters();
   });
+
+  let zipTimer;
+  async function updateOrigin() {
+    const zip = zipInput.value.trim();
+    zipMsg.hidden = true;
+    origin = null;
+    if (zip.length === 5) {
+      await window.Geo.load();
+      origin = await window.Geo.zipPoint(zip);
+      if (!origin) { zipMsg.hidden = false; zipMsg.textContent = "We couldn't find that ZIP code."; }
+    }
+    for (const s of schools) s._miles = origin ? window.Geo.milesTo(origin, s.id) : null;
+    applyFilters();
+  }
+  zipInput.addEventListener("input", () => { clearTimeout(zipTimer); zipTimer = setTimeout(updateOrigin, 300); });
+  milesInput.addEventListener("input", () => { clearTimeout(debounceTimer); debounceTimer = setTimeout(applyFilters, 250); });
 
   applyFilters();
 })();
