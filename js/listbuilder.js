@@ -229,6 +229,7 @@
   const sorters = {
     chance: (a, b) => b.est.p - a.est.p || (b.school.grad_rate ?? -1) - (a.school.grad_rate ?? -1),
     selective: (a, b) => (a.school.admit_rate ?? 101) - (b.school.admit_rate ?? 101) || b.est.p - a.est.p,
+    lessselective: (a, b) => (b.school.admit_rate ?? -1) - (a.school.admit_rate ?? -1) || b.est.p - a.est.p,
     grad: (a, b) => (b.school.grad_rate ?? -1) - (a.school.grad_rate ?? -1) || b.est.p - a.est.p,
     price: (a, b) => (a.school.net_price ?? 1e9) - (b.school.net_price ?? 1e9) || b.est.p - a.est.p,
   };
