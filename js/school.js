@@ -167,19 +167,25 @@
         ["volunteer", "Volunteer work"], ["work", "Work experience"], ["interest", "Demonstrated interest"]];
       const academics = [["rigor", "Rigor of high school record"], ["gpa", "Academic GPA"], ["class_rank", "Class rank"],
         ["tests", "Standardized test scores"], ["essay", "Application essay"], ["recs", "Recommendations"], ["interview", "Interview"]];
+      const how = entry.verified
+        ? `From this school's own Common Data Set (${escapeHtml(entry.cycle)}, section C7), where it rates how much each factor counts in first-year admission decisions. We read this table and checked it against the published document.`
+        : `From this school's own Common Data Set (${escapeHtml(entry.cycle)}, section C7), where it rates how much each factor counts in first-year admission decisions. The ratings were extracted automatically by collegedata.fyi, an open-data project. In our spot checks they matched the original documents, but confirm in the PDF before relying on a single rating.`;
+      const pdfLink = entry.pdf ? `<a href="${escapeHtml(entry.pdf)}" target="_blank" rel="noopener">Read this school's Common Data Set (PDF) →</a>` : "";
+      const pageLink = entry.verified
+        ? `<a href="${escapeHtml(entry.page)}" target="_blank" rel="noopener">All of its Common Data Sets →</a>`
+        : `<a href="${escapeHtml(entry.page)}" target="_blank" rel="noopener">See it on collegedata.fyi →</a>`;
       body.innerHTML = `
-        <p class="ec-note">From this school's own Common Data Set (${escapeHtml(entry.cycle)}, section C7), where it rates how much each factor counts in first-year admission decisions.</p>
+        <p class="ec-note">${how}</p>
         ${activities.map((r) => row(r, w)).join("")}
         <h3 class="ec-sub">For comparison</h3>
         ${academics.map((r) => row(r, w)).join("")}
-        <p class="ec-note">Very Important, Important, Considered, and Not Considered are the school's own ratings. They show how much a factor matters, not what a typical admitted student did.</p>
-        <p class="ec-links"><a href="${escapeHtml(entry.pdf)}" target="_blank" rel="noopener">Read this school's Common Data Set (PDF) →</a>
-        &nbsp; <a href="${escapeHtml(entry.page)}" target="_blank" rel="noopener">All of its Common Data Sets →</a></p>`;
+        <p class="ec-note">Very Important, Important, Considered, and Not Considered are the school's own answers on the form. They show how much it says a factor matters, not what a typical admitted student did. Some schools that review applications holistically mark nearly every factor "Considered"; that reflects how they fill out the form, not that nothing counts.</p>
+        <p class="ec-links">${pdfLink} &nbsp; ${pageLink}</p>`;
     } else {
       const q = encodeURIComponent(d.name + " Common Data Set 2024-2025");
       const site = d.url ? (d.url.startsWith("http") ? d.url : "https://" + d.url) : null;
       body.innerHTML = `
-        <p class="ec-note">We haven't added this school's rating yet. Nearly every college publishes one in <strong>section C7 of its Common Data Set</strong>, which rates factors like extracurricular activities, talent, character, and volunteer work as Very Important, Important, Considered, or Not Considered.</p>
+        <p class="ec-note">We don't have this school's rating (it may not publish a Common Data Set, or its file couldn't be read reliably). Most colleges publish one in <strong>section C7 of their Common Data Set</strong>, which rates factors like extracurricular activities, talent, character, and volunteer work as Very Important, Important, Considered, or Not Considered.</p>
         <p class="ec-links"><a class="btn btn-navy" href="https://www.google.com/search?q=${q}" target="_blank" rel="noopener">Search for this school's Common Data Set →</a>
         ${site ? `&nbsp; <a href="${escapeHtml(site)}" target="_blank" rel="noopener">School website →</a>` : ""}</p>
         <p class="ec-note">Once you open the PDF, look for "C7" (usually around page 8-12).</p>`;
