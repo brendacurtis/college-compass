@@ -1,0 +1,26 @@
+Step 1: Open a terminal in the right folder
+
+You need a terminal window open with the "site" folder as the current location. If you're not sure where that folder is, let me check.
+
+Found the site folder
+
+Found it: C:\Users\bcurt\College Prep Templates\site
+
+
+Step 2: Run the server
+
+python -m http.server 8000
+
+
+Step 3: View it in a browser
+
+Open this address in any browser:
+
+http://localhost:8000
+
+Want me to open it in the built-in browser pane so you can see it right now?
+
+A couple of things worth knowing:
+
+This server will keep running in the background of this session. To stop it later, just tell me "stop the server."
+That terminal window needs to stay open the whole time you're viewing the site — closing it (or pressing Ctrl+C) stops the server. When you're done, just press Ctrl+C in that window to shut it down.
