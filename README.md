@@ -46,7 +46,11 @@ python -m http.server 8000
 
 Then open `http://localhost:8000` in a browser. (Opening `index.html` directly by double-clicking won't work — browsers block the `fetch()` calls this site needs when loaded from a `file://` path.)
 
-## Publishing it for free (no coding required)
+## Hosting
+
+The live site is served by Cloudflare Workers (static assets) and rebuilt automatically from the `main` branch of this repository whenever new commits are pushed. `wrangler.jsonc` and `.assetsignore` tell Cloudflare what to publish. Cloudflare's deploy command is `npx wrangler deploy`, with no build command.
+
+## Other ways to publish it for free (no coding required)
 
 **Easiest option — Netlify Drop:**
 1. Go to [app.netlify.com/drop](https://app.netlify.com/drop) in your browser.
