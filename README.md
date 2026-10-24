@@ -48,7 +48,7 @@ Then open `http://localhost:8000` in a browser. (Opening `index.html` directly b
 
 ## Hosting
 
-The live site is at https://curtiscollegeprep.com, served by Cloudflare Workers (static assets) and rebuilt automatically from the `main` branch of this repository whenever new commits are pushed. `wrangler.jsonc` and `.assetsignore` tell Cloudflare what to publish. Cloudflare's deploy command is `npx wrangler deploy`, with no build command.
+The live site is at https://curtiscollege.com, served by Cloudflare Workers (static assets) and rebuilt automatically from the `main` branch of this repository whenever new commits are pushed. `wrangler.jsonc` and `.assetsignore` tell Cloudflare what to publish. Cloudflare's deploy command is `npx wrangler deploy`, with no build command.
 
 ## Other ways to publish it for free (no coding required)
 
