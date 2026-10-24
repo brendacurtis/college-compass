@@ -1,4 +1,4 @@
-# College Compass
+# Curtis College Prep
 
 A free, no-login college search, PDF profile, and application tracker site for families — built on the U.S. Department of Education's [College Scorecard](https://collegescorecard.ed.gov) dataset.
 

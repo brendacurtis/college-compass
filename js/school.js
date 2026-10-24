@@ -25,7 +25,7 @@
   loading.hidden = true;
   content.hidden = false;
 
-  document.getElementById("page-title").textContent = `${d.name} — College Compass`;
+  document.getElementById("page-title").textContent = `${d.name} — Curtis College Prep`;
   document.getElementById("crumb-name").textContent = d.name;
   document.getElementById("school-name").textContent = d.name;
   document.getElementById("school-loc").textContent = [d.city, d.state].filter(Boolean).join(", ") +

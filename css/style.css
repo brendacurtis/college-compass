@@ -81,6 +81,7 @@ img, svg { max-width: 100%; }
   font-weight: 800;
   font-size: 1rem;
 }
+.brand { white-space: nowrap; }
 .brand:hover { color: #fff; }
 .brand:hover .mark { filter: brightness(1.08); }
 
@@ -106,7 +107,7 @@ img, svg { max-width: 100%; }
   cursor: pointer;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 1100px) {
   .main-nav {
     display: none;
     position: absolute;

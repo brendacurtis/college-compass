@@ -163,7 +163,7 @@
         render();
         alert("Tracker restored successfully.");
       } catch (e) {
-        alert("That file doesn't look like a valid College Compass backup.");
+        alert("That file doesn't look like a valid Curtis College Prep backup.");
       }
       importFile.value = "";
     };
